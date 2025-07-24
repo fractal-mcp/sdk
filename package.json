@@ -1,0 +1,29 @@
+{
+  "name": "anonymous-library",
+  "version": "1.0.0",
+  "description": "A monorepo managed with Turborepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "version:update": "node scripts/update-versions.js"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.0",
+    "turbo": "^2.5.4"
+  },
+  "packageManager": "npm@10.0.0",
+  "dependencies": {
+    "commander": "^14.0.0"
+  }
+}

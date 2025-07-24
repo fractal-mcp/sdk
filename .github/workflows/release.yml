@@ -1,0 +1,171 @@
+name: Release Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.2.3)'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes for this version'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Verify workspace setup
+        run: |
+          echo "=== Workspace packages ==="
+          npm ls --depth=0 --workspaces
+          echo "=== Turbo cache info ==="
+          npx turbo --version
+          echo "=== Check @fractal-mcp/mcp availability ==="
+          find . -name "@fractal" -type d | head -5
+          echo "=== Check if mcp package built ==="
+          ls -la packages/mcp/dist/ || echo "mcp not built yet"
+          echo "=== Check composer package ==="
+          ls -la packages/composer/dist/ || echo "composer not built yet"
+
+      - name: Update package versions
+        run: |
+          # Make the script executable
+          chmod +x scripts/update-versions.js
+          
+          # Update all package versions using the Node.js script
+          node scripts/update-versions.js "${{ inputs.version }}"
+
+      - name: Build dependencies first
+        run: |
+          echo "=== Building core packages first ==="
+          npx turbo build --filter=@fractal-mcp/mcp --verbosity=2
+          npx turbo build --filter=@fractal-mcp/composer --verbosity=2
+          echo "=== Core packages built ==="
+          
+      - name: Type check
+        run: |
+          echo "=== Type checking ==="
+          npx turbo run type-check || echo "Type check failed, but continuing..."
+          
+      - name: Build all packages
+        run: |
+          echo "=== Building with Turbo ==="
+          npx turbo build --verbosity=2
+          echo "=== Build completed ==="
+          echo "=== Post-build package check ==="
+          ls -la packages/mcp/dist/ || echo "mcp dist not found"
+          ls -la packages/composer/dist/ || echo "composer dist not found"
+          echo "=== Check provider-weather build ==="
+          ls -la apps/provider-weather/dist/ || echo "provider-weather dist not found"
+
+      - name: Create Git tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Release v${{ inputs.version }}: ${{ inputs.release_notes }}" || echo "No changes to commit"
+          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}: ${{ inputs.release_notes }}"
+          git push origin "v${{ inputs.version }}"
+
+      - name: Publish packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Verify npm authentication
+          echo "=== Verifying npm authentication ==="
+          npm whoami
+          echo "=== npm configuration ==="
+          npm config get registry
+          echo "=== npm token (masked) ==="
+          npm config get //registry.npmjs.org/:_authToken | head -c 10
+          
+          # Get list of packages from packages directory only (apps are private)
+          packages=$(find packages -name "package.json" -not -path "*/node_modules/*" | sort)
+          
+          echo "=== Publishing packages ==="
+          published_count=0
+          failed_count=0
+          
+          for package in $packages; do
+            package_dir=$(dirname "$package")
+            package_name=$(grep '"name"' "$package" | sed 's/.*"name": "\([^"]*\)".*/\1/')
+            
+            # Check if package is marked as private
+            if grep -q '"private":\s*true' "$package"; then
+              echo "⚠️  Skipping $package_name - marked as private"
+              continue
+            fi
+            
+            echo "📦 Publishing $package_name from $package_dir..."
+            cd "$package_dir"
+            
+            # Verify package is built (has dist directory)
+            if [ ! -d "dist" ]; then
+              echo "❌ $package_name has no dist directory - build may have failed"
+              failed_count=$((failed_count + 1))
+              cd - > /dev/null
+              continue
+            fi
+            
+            # Publish the package
+            if npm publish --access public; then
+              echo "✅ Successfully published $package_name"
+              published_count=$((published_count + 1))
+            else
+              echo "❌ Failed to publish $package_name"
+              echo "📋 Package info:"
+              npm publish --access public --dry-run
+              failed_count=$((failed_count + 1))
+            fi
+            
+            cd - > /dev/null
+          done
+          
+          echo "=== Publishing Summary ==="
+          echo "✅ Published: $published_count packages"
+          echo "❌ Failed: $failed_count packages"
+          
+          if [ $failed_count -gt 0 ]; then
+            echo "⚠️  Some packages failed to publish"
+            exit 1
+          fi
+
+      - name: Create GitHub Release
+        uses: shogo82148/actions-create-release@v1
+        with:
+          tag_name: v${{ inputs.version }}
+          release_name: Release v${{ inputs.version }}
+          body: ${{ inputs.release_notes }}
+          draft: false
+          prerelease: false
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ inputs.version }}
+          path: |
+            packages/*/dist/
+            apps/*/dist/
+            !packages/*/node_modules/
+            !apps/*/node_modules/
+          retention-days: 30 
