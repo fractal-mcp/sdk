@@ -1,110 +1,64 @@
+Welcome to fractal! 
 
-# Anonymous Library Monorepo
+# What is fractal? 
 
-## Fractal CLI 
-I did so much shit that I'm not sure this will 100% actually work but 
-```bash
-npm i
+Fractal transforms text-based AI agents into rich, interactive visual experiences. Instead of traditional chatbots that return plain text responses, Fractal enables MCP (Model Context Protocol) servers to return beautiful, functional UI components that render as interactive interfaces.
 
-npm run build
+**The core innovation:** Rather than forcing agents to describe interfaces in plain text, Fractal allows them to provide complete UI components that users can interact with directly. For example, instead of saying "The weather is sunny with a temperature of 72°F", an agent can return an interactive weather card with icons, animations, and controls.
 
-npx fractal bundle \
-    -e ~/code/spectre-mcp-servers/src/weather/ui/src/components/Test.tsx \
-    -d ./wowpuppies 
+Fractal provides:
+- **Component Registry**: Public and private registries for sharing and discovering UI components
+- **MCP Integration**: Seamless integration with the Model Context Protocol
+- **Rich SDKs**: Easy-to-use development kits for both providers and consumers
+- **Real-time Rendering**: Components render instantly in compatible chat applications
+
+[DEMONSTRATION: See the interactive examples at https://fractalmcp.com/]
+[LINK TO LANDING PAGE: https://fractalmcp.com/]
+
+# What can fractal do for you?
+
+Do either of these describe you?
+
+**🎨 Building a chat application?**  
+*"I am building a chat application and would like to provide rich visual experiences directly in chat!"*  
+→ [**Consumer Documentation**](./3_consumer.md) - Learn how to integrate Fractal into your chat app
+
+**🔧 Building a service or tool?**  
+*"I am building something else, and would like users to be able to interact with my service directly in chat!"*  
+→ [**Provider Documentation**](./2_provider.md) - Learn how to expose your service through Fractal
 
 
-npx fractal render \
-    -e ./wowpuppies/Component.jsx \
-    -c ./wowpuppies/index.css \
-    -d "$(cat testdata.json | jq -c .)" \
-    -o ./test.html
-```
+## Concepts
 
-## Publishing
+**MCP (Model Context Protocol)** - The Model Context Protocol is a standardized way for AI agents to connect to external tools and services. In the traditional MCP approach, servers return raw JSON data that agents must describe in plain text. Fractal extends MCP by enabling servers to return complete UI components instead of just data, transforming how agents interact with users.
 
-To publish the Fractal CLI to GitHub Package Registry:
+**Provider** - A service that exposes tools and/or UI components via MCP. Providers are the backend in the Fractal ecosystem. Instead of returning plain JSON responses, Fractal providers return rich UI components (like weather cards, charts, or interactive forms) that can be rendered directly in chat applications. Providers can share components in the public registry or keep them private.
 
-1. **Build the package:**
-   ```bash
-   cd packages/cli
-   npm run build
-   ```
+**Consumer** - A user-facing agent or chat application that connects to the Fractal MCP proxy. Consumers are the frontend in the Fractal ecosystem. They integrate Fractal's Agent SDK to display the rich UI components returned by providers, transforming basic text-based interactions into visual, interactive experiences for end users.
 
-2. **Publish to GitHub Package Registry:**
-   ```bash
-   npm publish
-   ```
+## CLI reference
 
-### Authentication
+→ [**CLI Documentation**](./4_cli.md) - Complete reference for the Fractal CLI toolkit
 
-Make sure you're authenticated with GitHub Package Registry:
-```bash
-npm login --registry=https://npm.pkg.github.com/
-```
+## API reference 
 
-Use your GitHub username and a GitHub Personal Access Token (with `write:packages` permission) as the password.
+### fractal-mcp/mcp
+### fractal-mcp/composer
+### fractal-mcp/bundle
 
-### Installing from GitHub Package Registry
+### fractal-mcp/render
+### fractal-mcp/client
 
-Team members can install the CLI globally:
-```bash
-npm install -g @fractal-mcp/cli
-```
+### fractal-mcp/cli
+- nothing here, see cli refernece 
 
-Or use it directly:
-```bash
-npx @fractal-mcp/cli --help
-```
+## Examples
 
-**Note:** The package is private to the `@fractal` organization and requires authentication to install.
+**[apps/example-provider-weather](../apps/example-provider-weather)**
+- Uses a real weather API
+- Complete provider implementation with UI components
 
-### Automated Publishing
-
-Use the GitHub action to publish all packages:
-
-1. Go to **Actions** → **Publish Packages** in your GitHub repository
-2. Click **Run workflow**
-3. Fill in the required fields:
-   - **Version**: (e.g., `2.0.11`)
-   - **Title**: (e.g., `"Major CLI Updates"`)
-   - **Release Notes**: (describe what changed)
-4. Click **Run workflow**
-
-The action will:
-- ✅ Build all packages
-- ✅ Resolve workspace dependencies (`*` → actual versions)
-- ✅ Remove turbo references
-- ✅ Publish in correct dependency order
-- ✅ Create standalone packages without monorepo dependencies
-- ✅ Create a GitHub release with your title and notes
-
-This is a [Turborepo](https://turbo.build/repo) monorepo.
-
-## Getting Started
-
-This monorepo is set up with:
-- **Turborepo** for build orchestration and caching
-- **npm workspaces** for package management
-- Basic pipeline configuration in `turbo.json`
-
-## Structure
-
-- `apps/` - Your applications
-- `packages/` - Shared packages and libraries
-
-## Available Scripts
-
-- `npm run build` - Build all packages and apps
-- `npm run dev` - Start development mode for all packages and apps
-- `npm run lint` - Lint all packages and apps
-- `npm run test` - Run tests for all packages and apps
-- `npm run clean` - Clean build artifacts
-
-## Adding Apps and Packages
-
-Create new apps in the `apps/` directory and packages in the `packages/` directory. Each should have its own `package.json` with appropriate scripts that match the pipeline defined in `turbo.json`.
-
-## Learn More
-
-- [Turborepo Documentation](https://turbo.build/repo/docs)
-- [npm Workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces)
+**[apps/example-consumer-vercel](../apps/example-consumer-vercel)**
+- Vercel deployment example
+- Shows how to connect to fractal
+- Demonstrates integration with Vercel package
