@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/bundle",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "A powerful bundling tool that uses Vite to create optimized single JavaScript and CSS files from your React/TypeScript/JavaScript entrypoints",
   "type": "module",
   "main": "./dist/index.js",
