@@ -20,11 +20,11 @@ Do either of these describe you?
 
 **🎨 Building a chat application?**  
 *"I am building a chat application and would like to provide rich visual experiences directly in chat!"*  
-→ [**Consumer Documentation**](./3_consumer.md) - Learn how to integrate Fractal into your chat app
+→ [**Consumer Documentation**](./docs/3_consumer.md) - Learn how to integrate Fractal into your chat app
 
 **🔧 Building a service or tool?**  
 *"I am building something else, and would like users to be able to interact with my service directly in chat!"*  
-→ [**Provider Documentation**](./2_provider.md) - Learn how to expose your service through Fractal
+→ [**Provider Documentation**](./docs/2_provider.md) - Learn how to expose your service through Fractal
 
 
 ## Concepts
@@ -37,7 +37,7 @@ Do either of these describe you?
 
 ## CLI reference
 
-→ [**CLI Documentation**](./4_cli.md) - Complete reference for the Fractal CLI toolkit
+→ [**CLI Documentation**](./docs/4_cli.md) - Complete reference for the Fractal CLI toolkit
 
 ## Examples
 
