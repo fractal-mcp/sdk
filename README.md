@@ -41,11 +41,11 @@ Do either of these describe you?
 
 ## Examples
 
-**[apps/example-provider-weather](../apps/example-provider-weather)**
+**[apps/example-provider-weather](./apps/example-provider-weather)**
 - Uses a real weather API
 - Complete provider implementation with UI components
 
-**[apps/example-consumer-vercel](../apps/example-consumer-vercel)**
+**[apps/example-consumer-vercel](./apps/example-consumer-vercel)**
 - Vercel deployment example
 - Shows how to connect to fractal
 - Demonstrates integration with Vercel package
