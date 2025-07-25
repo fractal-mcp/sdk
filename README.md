@@ -12,8 +12,7 @@ Fractal provides:
 - **Rich SDKs**: Easy-to-use development kits for both providers and consumers
 - **Real-time Rendering**: Components render instantly in compatible chat applications
 
-[DEMONSTRATION: See the interactive examples at https://fractalmcp.com/]
-[LINK TO LANDING PAGE: https://fractalmcp.com/]
+Head to [https://fractalmcp.com/](https://fractalmcp.com/) for more info!
 
 # What can fractal do for you?
 
@@ -39,18 +38,6 @@ Do either of these describe you?
 ## CLI reference
 
 → [**CLI Documentation**](./4_cli.md) - Complete reference for the Fractal CLI toolkit
-
-## API reference 
-
-### fractal-mcp/mcp
-### fractal-mcp/composer
-### fractal-mcp/bundle
-
-### fractal-mcp/render
-### fractal-mcp/client
-
-### fractal-mcp/cli
-- nothing here, see cli refernece 
 
 ## Examples
 
