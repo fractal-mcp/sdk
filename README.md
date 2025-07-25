@@ -62,3 +62,26 @@ Do either of these describe you?
 - Vercel deployment example
 - Shows how to connect to fractal
 - Demonstrates integration with Vercel package
+
+## Package Documentation
+
+Complete API documentation for all Fractal packages:
+
+### Provider Core Packages
+- **[@fractal-mcp/client](./packages/client/README.md)** - Main SDK for connecting to Fractal MCP servers
+- **[@fractal-mcp/mcp](./packages/mcp/README.md)** - MCP server implementation with component tools
+- **[@fractal-mcp/render](./packages/render/README.md)** - React components for iframe-based widget rendering
+
+### Consumer Core Packages
+- **[@fractal-mcp/composer](./packages/composer/README.md)** - React hooks for building provider widgets
+- **[@fractal-mcp/shared-ui](./packages/shared-ui/README.md)** - Shared messaging utilities and event types
+
+### Consumer Integrations
+- **[@fractal-mcp/vercel-connector](./packages/vercel-connector/README.md)** - Integration with Vercel AI SDK
+
+### Development Tools
+- **[@fractal-mcp/cli](./packages/cli/README.md)** - Command-line interface for Fractal development
+- **[@fractal-mcp/bundle](./packages/bundle/README.md)** - Component bundling and HTML generation
+- **[@fractal-mcp/generate](./packages/generate/README.md)** - TypeScript code generation from MCP schemas
+- **[@fractal-mcp/preview](./packages/preview/README.md)** - Development server for testing MCP tools
+

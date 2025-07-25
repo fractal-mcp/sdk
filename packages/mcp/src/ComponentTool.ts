@@ -11,6 +11,7 @@ import { ServerRequest, ServerNotification } from "@modelcontextprotocol/sdk/typ
 import bundle, { generateHtml } from "@fractal-mcp/bundle"
 
 export type McpInput = { [x: string]: any };
+ 
 
 /**
  * Every tool should have a name, description, and input schema.
