@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/vercel-connector",
-  "version": "1.0.0",
+  "version": "2.2.1",
   "description": "Vercel connector package for Fractal MCP",
   "type": "module",
   "main": "./dist/index.js",
@@ -16,7 +16,7 @@
     "dist"
   ],
   "dependencies": {
-    "@fractal-mcp/client": "*",
+    "@fractal-mcp/client": "2.2.1",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "dotenv": "^16.0.0"
   },
@@ -25,4 +25,4 @@
     "eslint": "^8.0.0",
     "typescript": "^5.0.0"
   }
-} 
+}
