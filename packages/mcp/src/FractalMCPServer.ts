@@ -15,14 +15,27 @@ export type FractalTool = {
     handler: (args: { [x: string]: any }, extra: RequestHandlerExtra<ServerRequest, ServerNotification>) => any;
 }
 
+export const AuthStruct = z.object({
+    authType: z.enum(["OAUTH2", "TOKEN"]),
+    scopes: z.array(z.string()),
+    authUrl: z.string(),
+    tokenUrl: z.string(),
+    refreshTokenUrl: z.string(),
+});
+
+export type AuthStruct = z.infer<typeof AuthStruct>;
+
+
 export default class FractalMCPServer implements IMcpConnectable {
     public server: McpServer;
     private tools: FractalTool[];
     private componentTools: FractalComponentTool<any, any>[];
-    constructor({ name, version }: { name: string, version: string }) {
+    private auth: AuthStruct[];
+    constructor({ name, version, auth = [] }: { name: string, version: string, auth: AuthStruct[] }) {
         this.server = new McpServer({ name, version });
         this.tools = [];
         this.componentTools = [];
+        this.auth = []
     }
 
     tool(data: FractalTool) {
@@ -43,6 +56,7 @@ export default class FractalMCPServer implements IMcpConnectable {
 
     async introspect() {
         const result = {
+            auth: this.auth,
             tools: [] as Array<{
                 name: string;
                 description: string | undefined;
