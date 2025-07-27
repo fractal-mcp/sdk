@@ -11,7 +11,11 @@ async function main() {
   const port = process.env.PORT ? parseInt(process.env.PORT) : 3100;
 
   // Nothing new here!
-  const mcpServer = new FractalMCPServer({ name: 'weather', version: '1.0.0' });
+  const mcpServer = new FractalMCPServer({ 
+    name: 'weather', 
+    version: '1.0.0',
+    auth: []
+  });
 
   console.log("Registering component tool");
 
