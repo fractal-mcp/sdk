@@ -17,6 +17,7 @@
   "files": [
     "lib",
     "dist",
+    "src",
     "vite.config.ts",
     "index.html"
   ],
