@@ -1,6 +1,6 @@
 {
   "name": "anonymous-library",
-  "version": "1.0.0",
+  "version": "2.3.0",
   "description": "A monorepo managed with Turborepo",
   "private": true,
   "workspaces": [
