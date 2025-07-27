@@ -16,7 +16,9 @@
   },
   "files": [
     "lib",
-    "dist"
+    "dist",
+    "vite.config.ts",
+    "index.html"
   ],
   "dependencies": {
     "@fractal-mcp/render": "*",
