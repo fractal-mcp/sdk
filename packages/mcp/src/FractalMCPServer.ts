@@ -15,7 +15,7 @@ export type FractalTool = {
     handler: (args: { [x: string]: any }, extra: RequestHandlerExtra<ServerRequest, ServerNotification>) => any;
 }
 
-export const AuthStruct = z.object({
+export const AuthStructSchema = z.object({
     authType: z.enum(["OAUTH2", "TOKEN"]),
     scopes: z.array(z.string()),
     authUrl: z.string(),
@@ -23,10 +23,10 @@ export const AuthStruct = z.object({
     refreshTokenUrl: z.string(),
 });
 
-export type AuthStruct = z.infer<typeof AuthStruct>;
+export type AuthStruct = z.infer<typeof AuthStructSchema>;
 
 
-export default class FractalMCPServer implements IMcpConnectable {
+export class FractalMCPServer implements IMcpConnectable {
     public server: McpServer;
     private tools: FractalTool[];
     private componentTools: FractalComponentTool<any, any>[];
