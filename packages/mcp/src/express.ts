@@ -123,45 +123,48 @@ export const defaultCorsMiddleware = (req: Request, res: Response, next: NextFun
     next();
 }
 
+export const defaultAuthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    // Skip auth for localhost requests
+    // const clientIp = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+    // const isLocalhost = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === 'localhost' || 
+    //                    clientIp === '::ffff:127.0.0.1' || req.hostname === 'localhost';
+    
+    // if (isLocalhost) {
+    //     next();
+    //     return;
+    // }
+
+    const auth = req.headers["authorization"];
+    if (!auth || !auth.startsWith("Bearer ")) {
+        res.status(401).json({ error: "missing_token" });
+        return;
+    }
+    const token = auth.substring(7);
+
+    try {
+        const publicKey = await fetchPublicKey();
+
+        const payload = jwt.verify(token, publicKey, {
+            algorithms: ["RS256"],
+            issuer: "fractal-auth",
+            audience: "fractal",
+        });
+        (req as any).auth = payload;
+        next();
+    } catch (err) {
+        res.status(401).json({ error: "invalid_token", details: (err as Error).message });
+    }
+}
+
+
 export function startExpressServer(mcpServer: IMcpConnectable, port: number = 3000): void {
     const transports: Record<string, StreamableHTTPServerTransport> = {};
     const app = express();
     app.use(express.json({ limit: '50mb' }));
-
-    // Add CORS middleware
     app.use(defaultCorsMiddleware);
-
-    // Middleware to authenticate JWT from Authorization header
-    app.use(async (req, res, next) => {
-        const auth = req.headers["authorization"];
-        if (!auth || !auth.startsWith("Bearer ")) {
-            res.status(401).json({ error: "missing_token" });
-            return;
-        }
-        const token = auth.substring(7);
-
-        try {
-            const publicKey = await fetchPublicKey();
-
-            const payload = jwt.verify(token, publicKey, {
-                algorithms: ["RS256"],
-                issuer: "fractal-auth",
-                audience: "fractal",
-            });
-            (req as any).auth = payload;
-            next();
-        } catch (err) {
-            res.status(401).json({ error: "invalid_token", details: (err as Error).message });
-        }
-    });
+    app.use(defaultAuthMiddleware);
 
     makeExpressApp(app, mcpServer);
-
-    // Add a hello endpoint for testing authentication
-    app.get("/hello", (req, res) => {
-        const user = (req as any).auth;
-        res.json({ message: `Hello, user!`, user });
-    });
 
     app.listen(port, () => {
         console.log(`MCP Streamable HTTP Server listening on port ${port}`);

@@ -59,7 +59,3 @@ export async function introspectServerUrl(serverUrl: string) {
         throw error;
     }
 }
-
-// Example usage (commented out to avoid auto-execution)
-// const res = await introspectServerUrl("http://localhost:3100/mcp")
-// console.log(JSON.stringify(res, null, 2))

@@ -31,11 +31,11 @@ export default class FractalMCPServer implements IMcpConnectable {
     private tools: FractalTool[];
     private componentTools: FractalComponentTool<any, any>[];
     private auth: AuthStruct[];
-    constructor({ name, version, auth = [] }: { name: string, version: string, auth: AuthStruct[] }) {
+    constructor({ name, version, auth = [] }: { name: string, version: string, auth?: AuthStruct[] }) {
         this.server = new McpServer({ name, version });
         this.tools = [];
         this.componentTools = [];
-        this.auth = []
+        this.auth = auth || []
     }
 
     tool(data: FractalTool) {
