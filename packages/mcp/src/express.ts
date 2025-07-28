@@ -125,14 +125,14 @@ export const defaultCorsMiddleware = (req: Request, res: Response, next: NextFun
 
 export const defaultAuthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     // Skip auth for localhost requests
-    // const clientIp = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
-    // const isLocalhost = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === 'localhost' || 
-    //                    clientIp === '::ffff:127.0.0.1' || req.hostname === 'localhost';
+    const clientIp = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+    const isLocalhost = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === 'localhost' || 
+                       clientIp === '::ffff:127.0.0.1' || req.hostname === 'localhost';
     
-    // if (isLocalhost) {
-    //     next();
-    //     return;
-    // }
+    if (isLocalhost) {
+        next();
+        return;
+    }
 
     const auth = req.headers["authorization"];
     if (!auth || !auth.startsWith("Bearer ")) {
