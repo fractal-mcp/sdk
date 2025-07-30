@@ -53,6 +53,7 @@ export const bundle = async (
     // Configure Vite for the build
     const viteConfig = defineConfig({
       plugins: [react()],
+      publicDir: false, // Don't copy public directory for component builds
       css: {
         postcss: {
           plugins: [
