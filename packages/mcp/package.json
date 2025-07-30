@@ -16,7 +16,6 @@
     "dist"
   ],
   "dependencies": {
-    "@fractal-mcp/bundle": "*",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "express": "^4.18.0",
     "jsonwebtoken": "^9.0.0",
