@@ -29,6 +29,59 @@ function promptUser(question: string): Promise<string> {
   });
 }
 
+// Shared function to handle individual bundling with spinner updates
+async function bundleSingleComponent(
+  entrypoint: string,
+  outputDir: string,
+  componentName?: string,
+  spinner?: any
+): Promise<{ jsPath: string; cssPath?: string }> {
+  const componentBaseName = path.basename(entrypoint, path.extname(entrypoint));
+  
+  if (spinner) {
+    spinner.text = `Bundling ${componentBaseName}...`;
+  }
+
+  const result = await bundle({
+    entrypoint,
+    dst: outputDir,
+    componentName: componentName || componentBaseName,
+  });
+
+  return result;
+}
+
+// Helper function to find all .tsx files in a directory
+function findTsxFiles(directory: string): string[] {
+  const files: string[] = [];
+  
+  function scanDirectory(dir: string) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      
+      if (entry.isDirectory()) {
+        scanDirectory(fullPath);
+      } else if (entry.isFile() && entry.name.endsWith('.tsx')) {
+        files.push(fullPath);
+      }
+    }
+  }
+  
+  scanDirectory(directory);
+  return files;
+}
+
+// Helper function to display bundling results
+function displayBundleResults(outputDir: string, componentName?: string) {
+  const files = fs.readdirSync(outputDir);
+  if (files.length > 0) {
+    console.log(`Generated files${componentName ? ` for ${componentName}` : ''}:`);
+    files.forEach((file) => console.log(`   - ${file}`));
+  }
+}
+
 const program = new Command();
 
 program
@@ -52,24 +105,123 @@ program
     const spinner = ora("Starting bundle process...").start();
 
     try {
-      spinner.text = `Bundling ${path.basename(options.entrypoint)}...`;
-
-      const { jsPath, cssPath } = await bundle({
-        entrypoint: options.entrypoint,
-        dst: options.dst,
-        componentName: options.name,
-      });
-
+      await bundleSingleComponent(
+        options.entrypoint,
+        options.dst,
+        options.name,
+        spinner
+      );
 
       spinner.succeed(`Bundle created successfully in ${options.dst}`);
-
-      const files = fs.readdirSync(options.dst);
-      if (files.length > 0) {
-        console.log("Generated files:");
-        files.forEach((file) => console.log(`   - ${file}`));
-      }
+      displayBundleResults(options.dst);
     } catch (error) {
       spinner.fail("Bundle failed");
+      console.error(error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+  });
+
+// Bundle-all command
+program
+  .command("bundle-all")
+  .description("Bundle all .tsx files in a subdirectory into separate output directories")
+  .requiredOption(
+    "-s, --source <path>",
+    "Source subdirectory containing .tsx files to bundle",
+  )
+  .requiredOption(
+    "-d, --dst <path>", 
+    "Output directory path (parent directory for all bundles)"
+  )
+  .action(async (options) => {
+    const spinner = ora("Starting bundle-all process...").start();
+
+    try {
+      // Resolve paths
+      const sourceDir = path.resolve(options.source);
+      const outputDir = path.resolve(options.dst);
+
+      // Validate source directory exists
+      if (!fs.existsSync(sourceDir)) {
+        throw new Error(`Source directory not found: ${sourceDir}`);
+      }
+
+      if (!fs.statSync(sourceDir).isDirectory()) {
+        throw new Error(`Source path is not a directory: ${sourceDir}`);
+      }
+
+      // Find all .tsx files
+      spinner.text = "Scanning for .tsx files...";
+      const tsxFiles = findTsxFiles(sourceDir);
+
+      if (tsxFiles.length === 0) {
+        spinner.warn(`No .tsx files found in ${sourceDir}`);
+        return;
+      }
+
+      spinner.text = `Found ${tsxFiles.length} .tsx file(s), starting bundling...`;
+
+      // Ensure output directory exists
+      fs.mkdirSync(outputDir, { recursive: true });
+
+      const results: Array<{ componentName: string; outputPath: string; success: boolean; error?: string }> = [];
+
+      // Bundle each file
+      for (let i = 0; i < tsxFiles.length; i++) {
+        const tsxFile = tsxFiles[i];
+        const componentName = path.basename(tsxFile, '.tsx');
+        const componentOutputDir = path.join(outputDir, componentName);
+        
+        try {
+          spinner.text = `Bundling ${componentName} (${i + 1}/${tsxFiles.length})...`;
+          
+          // Create component-specific output directory
+          fs.mkdirSync(componentOutputDir, { recursive: true });
+          
+          await bundleSingleComponent(tsxFile, componentOutputDir, componentName);
+          
+          results.push({
+            componentName,
+            outputPath: componentOutputDir,
+            success: true,
+          });
+        } catch (error) {
+          results.push({
+            componentName,
+            outputPath: componentOutputDir,
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+
+      // Report results
+      const successful = results.filter(r => r.success);
+      const failed = results.filter(r => !r.success);
+
+      if (successful.length > 0) {
+        spinner.succeed(`Bundle-all completed: ${successful.length}/${tsxFiles.length} components bundled successfully`);
+        
+        console.log("\n✅ Successfully bundled components:");
+        successful.forEach(result => {
+          console.log(`   ${result.componentName} → ${path.relative(process.cwd(), result.outputPath)}`);
+        });
+      }
+
+      if (failed.length > 0) {
+        console.log(`\n❌ Failed to bundle ${failed.length} component(s):`);
+        failed.forEach(result => {
+          console.log(`   ${result.componentName}: ${result.error}`);
+        });
+        
+        if (successful.length === 0) {
+          spinner.fail("All bundles failed");
+          process.exit(1);
+        }
+      }
+
+    } catch (error) {
+      spinner.fail("Bundle-all failed");
       console.error(error instanceof Error ? error.message : error);
       process.exit(1);
     }
