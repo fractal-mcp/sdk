@@ -23,7 +23,7 @@ async function main() {
   mcpServer.componentTool({
     name: 'get_current_weather',
     description: 'Get current weather in a city',
-    componentPath: path.resolve('ui/CurrentWeather.tsx'),
+    componentBundlePath: path.resolve('bundled/CurrentWeather'),
     inputSchema: { location: z.string() },
     price: 100,
     handler: (params: { location: string }, _extra: RequestHandlerExtra<ServerRequest, ServerNotification>) => getCurrentWeather(params.location),
@@ -32,7 +32,7 @@ async function main() {
   mcpServer.componentTool({
     name: 'get_hourly_forecast',
     description: 'Get hourly forecast for a city',
-    componentPath: path.resolve('ui/HourlyForecast.tsx'),
+    componentBundlePath: path.resolve('bundled/HourlyForecast'),
     inputSchema: { location: z.string() },
     price: 1000,
     handler: (params: { location: string }, _extra: RequestHandlerExtra<ServerRequest, ServerNotification>) => getHourlyForecast(params.location),
