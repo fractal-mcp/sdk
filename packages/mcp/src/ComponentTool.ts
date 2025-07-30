@@ -5,11 +5,6 @@ import os from "os";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import { ServerRequest, ServerNotification } from "@modelcontextprotocol/sdk/types.js";
-
-// Useful for demo purposes
-// Consider removing when we move to production
-import bundle, { generateHtml } from "@fractal-mcp/bundle"
-
 export type McpInput = { [x: string]: any };
  
 
@@ -44,9 +39,7 @@ export type WithComponentBundle<TData> =
  * - componentBundlePath - a path to a bundled component
  * - Or specify both the bundled JSX and CSS files directly
  */
-export type FractalComponentToolUISpec = { componentPath: string } 
-    | { componentBundlePath: string } 
-    | { componentBundleHtmlPath: string } ;
+export type FractalComponentToolUISpec = { componentBundlePath: string } 
 
 export type FractalComponentToolHandler<TInput extends McpInput, TOutput> = (args: TInput, extra: RequestHandlerExtra<ServerRequest, ServerNotification>) => Promise<TOutput>;
 
@@ -70,6 +63,64 @@ export type FractalStaticComponentTool<TInput extends McpInput, TData> = BasicTo
 
 export type FractalComponentTool<TInput extends McpInput, TData> = FractalDynamicComponentTool<TInput, TData> | FractalStaticComponentTool<TInput, TData>;
 
+export interface GenerateHtmlOptions {
+    jsPath: string;
+    cssPath?: string;
+    title?: string;
+    data?: unknown;
+  }
+  
+  /**
+   * Generates a full HTML document from a snippet and CSS.
+   */
+  export const getSourceHtml = (
+    html: string,
+    css: string,
+    title: string = 'Component Preview'
+  ): string => {
+    return `
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${title}</title>
+      ${css ? `<style>${css}</style>` : ''}
+  </head>
+  <body>
+      ${html}
+  </body>
+  </html>`;
+  };
+  
+  export function generateHtml(options: GenerateHtmlOptions): string {
+    const { jsPath, cssPath, title, data } = options;
+    const js = fs.readFileSync(jsPath, "utf8");
+    let css = "";
+    if (cssPath && fs.existsSync(cssPath)) {
+      css = fs.readFileSync(cssPath, "utf8");
+    }
+    const encodedJs = Buffer.from(js, "utf8").toString("base64");
+  
+    const dataScript =
+      data !== undefined
+        ? `<script id="fractal-data" type="application/json">${JSON.stringify(data)}</script>`
+        : '';
+  
+    const snippet = `\n<div id="root"></div>${dataScript}\n<script type="importmap">\n{
+      "imports": {
+        "react": "https://esm.sh/react@19",
+        "react-dom/client": "https://esm.sh/react-dom@19/client"
+      }
+  }</script>\n<script type="module">\nimport React from 'react';\nimport { createRoot } from 'react-dom/client';\nconst dataEl = document.getElementById('fractal-data');\nwindow.__FRACTAL_DATA__ = dataEl ? JSON.parse(dataEl.textContent || '{}') : undefined;\nconst url = 'data:text/javascript;base64,${encodedJs}';\nimport(url).then(mod => {
+    const Component = mod.default;
+    const root = createRoot(document.getElementById('root'));
+    root.render(React.createElement(Component));
+  });\n</script>`;
+  
+  return getSourceHtml(snippet, css, title);
+}
+
+
 /**
  * Get the component HTML from the component tool.
  * 
@@ -79,23 +130,10 @@ export type FractalComponentTool<TInput extends McpInput, TData> = FractalDynami
 export async function getComponentBundle(
     componentTool: FractalComponentTool<any, any>
 ): Promise<FractalComponentToolBundle | undefined> {
-
-    // Danger! This is super nice for dev, but don't do this in production!
-    // It is HIGHLY RECOMMENDED to prebundle your components before shipping them to the client.
-    if ('componentPath' in componentTool) {
-        const tmpComponentDir = await fs.promises.mkdtemp(
-            path.join(os.tmpdir(), 'fractal-component-')
-        );
-        const result = await bundle({
-            entrypoint: componentTool.componentPath,
-            dst: tmpComponentDir,
-        });
-        return {
-            jsPath: result.jsPath,
-            cssPath: result.cssPath,
-        };
-    }
     
+    if ('componentPath' in componentTool) {
+        throw new Error("'componentPath' has been deprecated -- use 'componentBundlePath' instead")
+    }
     // Recommended for production.
     if ('componentBundlePath' in componentTool) {
         const htmlPath = path.join(componentTool.componentBundlePath, 'index.html');
@@ -109,12 +147,6 @@ export async function getComponentBundle(
             jsPath,
             cssPath: fs.existsSync(cssPath) ? cssPath : undefined,
         };
-    }
-
-    // Recommended if you need more - takes a raw html path
-    if ('componentBundleHtmlPath' in componentTool) {
-        const html = await fs.promises.readFile(componentTool.componentBundleHtmlPath, "utf-8");
-        return { html };
     }
 
     return undefined
