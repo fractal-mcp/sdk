@@ -59,6 +59,7 @@ jobs:
         run: |
           echo "=== Building core packages first ==="
           npx turbo build --filter=@fractal-mcp/mcp --verbosity=2
+          npx turbo build --filter=@fractal-mcp/mcp-express --verbosity=2
           npx turbo build --filter=@fractal-mcp/composer --verbosity=2
           echo "=== Core packages built ==="
           
@@ -74,6 +75,7 @@ jobs:
           echo "=== Build completed ==="
           echo "=== Post-build package check ==="
           ls -la packages/mcp/dist/ || echo "mcp dist not found"
+          ls -la packages/mcp-express/dist/ || echo "mcp-express dist not found"
           ls -la packages/composer/dist/ || echo "composer dist not found"
           echo "=== Check provider-weather build ==="
           ls -la apps/provider-weather/dist/ || echo "provider-weather dist not found"

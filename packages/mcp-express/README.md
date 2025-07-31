@@ -1,4 +1,4 @@
-# @fractal-mcp/express
+# @fractal-mcp/mcp-express
 
 Express server utilities for MCP (Model Context Protocol) server hosting.
 
@@ -9,14 +9,14 @@ This package provides Express.js middleware and utilities specifically designed 
 ## Installation
 
 ```bash
-npm install @fractal-mcp/express
+npm install @fractal-mcp/mcp-express
 ```
 
 ## Quick Start
 
 ```typescript
 import { FractalMCPServer } from '@fractal-mcp/mcp';
-import { startExpressServer } from '@fractal-mcp/express';
+import { startExpressServer } from '@fractal-mcp/mcp-express';
 
 const mcpServer = new FractalMCPServer();
 // Add your tools/resources to mcpServer...
@@ -56,7 +56,7 @@ JWT authentication middleware that validates tokens from the Fractal auth servic
 
 ```typescript
 import express from 'express';
-import { makeExpressApp, defaultCorsMiddleware } from '@fractal-mcp/express';
+import { makeExpressApp, defaultCorsMiddleware } from '@fractal-mcp/mcp-express';
 import { FractalMCPServer } from '@fractal-mcp/mcp';
 
 const app = express();
@@ -73,7 +73,7 @@ app.listen(3000);
 
 ```typescript
 import express from 'express';
-import { makeExpressApp, defaultAuthMiddleware } from '@fractal-mcp/express';
+import { makeExpressApp, defaultAuthMiddleware } from '@fractal-mcp/mcp-express';
 import { FractalMCPServer } from '@fractal-mcp/mcp';
 
 const app = express();

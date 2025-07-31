@@ -53,7 +53,8 @@ my-provider/
 Create your main server file (`server/index.ts`):
 
 ```typescript
-import { startExpressServer, FractalMCPServer } from '@fractal-mcp/mcp';
+import { startExpressServer } from '@fractal-mcp/mcp-express';
+import { FractalMCPServer } from '@fractal-mcp/mcp';
 import { getCurrentWeather } from './lib.js';
 import type { WeatherData } from './types.js';
 import * as path from 'path';
