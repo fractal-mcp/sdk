@@ -18,9 +18,10 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@fractal-mcp/mcp": "^2.1.0",
-    "@fractal-mcp/composer": "^2.1.0",
-    "@fractal-mcp/bundle": "^2.1.0",
+    "@fractal-mcp/mcp": "*",
+    "@fractal-mcp/mcp-express": "*",
+    "@fractal-mcp/composer": "*",
+    "@fractal-mcp/bundle": "*",
     "express": "^4.18.0",
     "zod": "^3.22.0"
   },

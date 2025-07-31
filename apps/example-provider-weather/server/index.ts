@@ -1,4 +1,5 @@
-import { startExpressServer, FractalMCPServer } from '@fractal-mcp/mcp';
+import { startExpressServer } from '@fractal-mcp/mcp-express';
+import { FractalMCPServer } from '@fractal-mcp/mcp';
 import { getCurrentWeather, getHourlyForecast } from './lib.js';
 import * as path from 'path';
 import { z } from 'zod';

@@ -4,4 +4,3 @@ export type { IMcpConnectable };
 export type {AuthStruct}
 export * from "./FractalMCPServer.js";
 export * from "./ComponentTool.js";
-export * from "./express.js";

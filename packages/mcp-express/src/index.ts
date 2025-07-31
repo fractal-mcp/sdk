@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { JSONRPCError } from "@modelcontextprotocol/sdk/types.js";
 import { InitializeRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { IMcpConnectable } from "./types";
+import { IMcpConnectable } from "@fractal-mcp/mcp";
 import jwt from "jsonwebtoken";
 import jwkToPem from "jwk-to-pem";
 
@@ -169,4 +169,4 @@ export function startExpressServer(mcpServer: IMcpConnectable, port: number = 30
     app.listen(port, () => {
         console.log(`MCP Streamable HTTP Server listening on port ${port}`);
     });
-}
+} 
