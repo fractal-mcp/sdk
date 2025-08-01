@@ -239,13 +239,3 @@ export function createFractalMcpRoute(
     OPTIONS: createFractalOptionsHandler(cors)
   };
 }
-
-// // Legacy exports for backward compatibility
-// export {
-//   createNextApiHandler,
-//   createAppRouteHandler,
-//   defaultCorsMiddleware,
-//   defaultAuthMiddleware,
-//   healthHandler,
-//   appRouteHealthHandler
-// } from "./legacy.js";
