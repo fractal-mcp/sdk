@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/mcp",
-  "version": "2.1.0",
+  "version": "0.6.0",
   "description": "Fractal MCP server components and utilities",
   "type": "module",
   "main": "./dist/index.js",
