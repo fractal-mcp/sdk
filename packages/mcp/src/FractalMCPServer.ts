@@ -31,8 +31,8 @@ export class FractalMCPServer implements IMcpConnectable {
     private tools: FractalTool[];
     private componentTools: FractalComponentTool<any, any>[];
     private auth: AuthStruct[];
-    constructor({ name, version, auth = [] }: { name: string, version: string, auth?: AuthStruct[] }) {
-        this.server = new McpServer({ name, version });
+    constructor({ name, version, auth = [], server }: { name: string, version: string, auth?: AuthStruct[], server?: McpServer }) {
+        this.server = server || new McpServer({ name, version });
         this.tools = [];
         this.componentTools = [];
         this.auth = auth || []
@@ -52,6 +52,21 @@ export class FractalMCPServer implements IMcpConnectable {
 
     async connect(transport: Transport) {
         this.server.connect(transport);
+    }
+
+    // Method to connect tools to an existing McpServer instance
+    connectToServer(server: McpServer) {
+        // Register all tools with the provided server
+        for (const tool of this.tools) {
+            server.tool(tool.name, tool.description || "", tool.inputSchema, async (...args) => {
+                return tool.handler(...args);
+            });
+        }
+        
+        // Register component tools
+        for (const componentTool of this.componentTools) {
+            registerComponentTool(server, componentTool);
+        }
     }
 
     async introspect() {
