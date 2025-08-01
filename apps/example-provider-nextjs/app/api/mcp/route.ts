@@ -1,4 +1,5 @@
-import { createFractalMcpRoute, FractalMCPServer } from "@fractal-mcp/mcp-nextjs";
+import { createFractalMcpRoute } from "@fractal-mcp/mcp-nextjs";
+import { FractalMCPServer } from "@fractal-mcp/mcp"
 import { z } from "zod";
 import { getCurrentWeather, getHourlyForecast } from "../../../lib/weather";
 import * as path from 'path';

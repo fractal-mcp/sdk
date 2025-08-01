@@ -240,16 +240,12 @@ export function createFractalMcpRoute(
   };
 }
 
-// Re-export useful types and utilities
-export { createMcpHandler, withMcpAuth } from "@vercel/mcp-adapter";
-export { FractalMCPServer } from "@fractal-mcp/mcp";
-
-// Legacy exports for backward compatibility
-export {
-  createNextApiHandler,
-  createAppRouteHandler,
-  defaultCorsMiddleware,
-  defaultAuthMiddleware,
-  healthHandler,
-  appRouteHealthHandler
-} from "./legacy.js";
+// // Legacy exports for backward compatibility
+// export {
+//   createNextApiHandler,
+//   createAppRouteHandler,
+//   defaultCorsMiddleware,
+//   defaultAuthMiddleware,
+//   healthHandler,
+//   appRouteHealthHandler
+// } from "./legacy.js";
