@@ -1,4 +1,4 @@
-import type { NWSHourlyForecast, NWSHourlyForecastPeriod } from '../server/types'
+import type { NWSHourlyForecast, NWSHourlyForecastPeriod } from '../lib/types'
 import "./index.css"
 import { useFractal } from '@fractal-mcp/composer';
 import { useState, useMemo } from 'react';
