@@ -113,7 +113,7 @@ export function makeExpressApp(app: express.Express, mcpServer: IMcpConnectable)
 export const defaultCorsMiddleware = (req: Request, res: Response, next: NextFunction) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, mcp-session-id");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, mcp-session-id, authorization");
     
     // Handle preflight requests
     if (req.method === "OPTIONS") {
