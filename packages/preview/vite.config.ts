@@ -46,6 +46,7 @@ const mcpProxyPlugin = () => {
               parsedResult = JSON.parse(result.content[0].text);
             } catch (parseErr) {
               console.error('[Vite Proxy] Failed to parse MCP result:', parseErr);
+              console.log("Bad json:", result.content[0].text)
               parsedResult = result;
             }
 

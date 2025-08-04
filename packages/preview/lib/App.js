@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState, useEffect, useRef, memo } from 'react';
 import { FractalFrame } from "@fractal-mcp/render";
-import { callMcpTool } from "@fractal-mcp/render/src/shared";
+import { callMcpTool } from "@fractal-mcp/render";
 const MemoizedFractalFrame = memo(FractalFrame);
 const App = () => {
     const [serverUrl, setServerUrl] = useState('');
