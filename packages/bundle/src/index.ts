@@ -156,19 +156,12 @@ const reactVersionLogger = (metadataCallback?: (version: string) => void) => {
   return {
     name: 'react-version-logger',
     async buildStart(this: any) {
-      console.log(`🔍 DEBUG: Starting React version resolution...`);
-      console.log(`🔍 DEBUG: Current working directory: ${process.cwd()}`);
-      
       try {
         // Try react/package.json first
-        console.log(`🔍 DEBUG: Attempting to resolve 'react/package.json'...`);
         const reactPackageJson = await this.resolve('react/package.json');
-        console.log(`🔍 DEBUG: react/package.json resolve result:`, reactPackageJson);
         
         if (reactPackageJson && reactPackageJson.id && fs.existsSync(reactPackageJson.id)) {
-          console.log(`🔍 DEBUG: Found react/package.json at: ${reactPackageJson.id}`);
           const packageJson = JSON.parse(fs.readFileSync(reactPackageJson.id, 'utf8'));
-          console.log(`🔍 Vite resolved React version: ${packageJson.version} (from ${reactPackageJson.id})`);
           metadataCallback?.(packageJson.version);
           return;
         }
@@ -177,15 +170,12 @@ const reactVersionLogger = (metadataCallback?: (version: string) => void) => {
         try {
           const reactPath = require.resolve('react/package.json');
           const packageJson = JSON.parse(fs.readFileSync(reactPath, 'utf8'));
-          console.log(`🔍 React version: ${packageJson.version} (from ${reactPath})`);
           metadataCallback?.(packageJson.version);
         } catch (e) {
-          console.log(`🔍 Could not determine React version`);
           metadataCallback?.('unknown');
         }
         
       } catch (error) {
-        console.log(`🔍 Error resolving React:`, error);
         metadataCallback?.('unknown');
       }
     }
