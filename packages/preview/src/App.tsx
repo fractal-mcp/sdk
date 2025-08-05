@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, memo } from 'react';
 import {FractalFrame} from "@fractal-mcp/render"
-import { callMcpTool } from "@fractal-mcp/render/src/shared";
+import { callMcpTool } from "@fractal-mcp/render";
 
 const MemoizedFractalFrame = memo(FractalFrame);
 

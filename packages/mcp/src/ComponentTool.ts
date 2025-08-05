@@ -93,31 +93,47 @@ export interface GenerateHtmlOptions {
   };
   
   export function generateHtml(options: GenerateHtmlOptions): string {
-    const { jsPath, cssPath, title, data } = options;
-    const js = fs.readFileSync(jsPath, "utf8");
-    let css = "";
-    if (cssPath && fs.existsSync(cssPath)) {
-      css = fs.readFileSync(cssPath, "utf8");
-    }
-    const encodedJs = Buffer.from(js, "utf8").toString("base64");
-  
-    const dataScript =
-      data !== undefined
-        ? `<script id="fractal-data" type="application/json">${JSON.stringify(data)}</script>`
-        : '';
-  
-    const snippet = `\n<div id="root"></div>${dataScript}\n<script type="importmap">\n{
-      "imports": {
-        "react": "https://esm.sh/react@19",
-        "react-dom/client": "https://esm.sh/react-dom@19/client"
+  const { jsPath, cssPath, title, data } = options;
+  const js = fs.readFileSync(jsPath, "utf8");
+  let css = "";
+  if (cssPath && fs.existsSync(cssPath)) {
+    css = fs.readFileSync(cssPath, "utf8");
+  }
+  const encodedJs = Buffer.from(js, "utf8").toString("base64");
+
+  // Read React version from metadata.json in the same directory as jsPath
+  let reactVersion = "19"; // fallback
+  try {
+    const bundleDir = path.dirname(jsPath);
+    const metadataPath = path.join(bundleDir, "metadata.json");
+    if (fs.existsSync(metadataPath)) {
+      const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
+      if (metadata.react_version && metadata.react_version !== "unknown") {
+        // Extract major version for esm.sh (e.g., "18.2.0" -> "18")
+        reactVersion = metadata.react_version.split('.')[0];
       }
-  }</script>\n<script type="module">\nimport React from 'react';\nimport { createRoot } from 'react-dom/client';\nconst dataEl = document.getElementById('fractal-data');\nwindow.__FRACTAL_DATA__ = dataEl ? JSON.parse(dataEl.textContent || '{}') : undefined;\nconst url = 'data:text/javascript;base64,${encodedJs}';\nimport(url).then(mod => {
-    const Component = mod.default;
-    const root = createRoot(document.getElementById('root'));
-    root.render(React.createElement(Component));
-  });\n</script>`;
-  
-  return getSourceHtml(snippet, css, title);
+    }
+  } catch (error) {
+    console.warn(`Failed to read React version from metadata: ${error}`);
+  }
+
+  const dataScript =
+    data !== undefined
+      ? `<script id="fractal-data" type="application/json">${JSON.stringify(data)}</script>`
+      : '';
+
+  const snippet = `\n<div id="root"></div>${dataScript}\n<script type="importmap">\n{
+    "imports": {
+      "react": "https://esm.sh/react@${reactVersion}",
+      "react-dom/client": "https://esm.sh/react-dom@${reactVersion}/client"
+    }
+}</script>\n<script type="module">\nimport React from 'react';\nimport { createRoot } from 'react-dom/client';\nconst dataEl = document.getElementById('fractal-data');\nwindow.__FRACTAL_DATA__ = dataEl ? JSON.parse(dataEl.textContent || '{}') : undefined;\nconst url = 'data:text/javascript;base64,${encodedJs}';\nimport(url).then(mod => {
+  const Component = mod.default;
+  const root = createRoot(document.getElementById('root'));
+  root.render(React.createElement(Component));
+});\n</script>`;
+
+return getSourceHtml(snippet, css, title);
 }
 
 

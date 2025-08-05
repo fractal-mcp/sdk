@@ -48,11 +48,18 @@ export const bundle = async (
     plugins: [],
   };
 
+  // Variable to capture React version
+  let reactVersion = 'unknown';
   
   try {
     // Configure Vite for the build
     const viteConfig = defineConfig({
-      plugins: [react()],
+      plugins: [
+        reactVersionLogger((version) => {
+          reactVersion = version;
+        }),
+        react()
+      ],
       publicDir: false, // Don't copy public directory for component builds
       css: {
         postcss: {
@@ -115,6 +122,15 @@ export const bundle = async (
     const jsPath = path.join(absoluteDst, 'Component.jsx');
     const cssPath = path.join(absoluteDst, 'index.css');
 
+    // Write metadata file with React version
+    const metadata = {
+      react_version: reactVersion,
+    };
+    
+    const metadataPath = path.join(absoluteDst, 'metadata.json');
+    fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
+    console.log(`📄 Metadata written to ${metadataPath}`);
+
     // Build only generates JS/CSS files. Caller can create HTML separately.
     result.jsPath = jsPath;
 
@@ -133,4 +149,35 @@ export const bundle = async (
   return result;
 };
 
-export default bundle; 
+export default bundle;
+
+// Plugin to log the React version that Vite actually resolves
+const reactVersionLogger = (metadataCallback?: (version: string) => void) => {
+  return {
+    name: 'react-version-logger',
+    async buildStart(this: any) {
+      try {
+        // Try react/package.json first
+        const reactPackageJson = await this.resolve('react/package.json');
+        
+        if (reactPackageJson && reactPackageJson.id && fs.existsSync(reactPackageJson.id)) {
+          const packageJson = JSON.parse(fs.readFileSync(reactPackageJson.id, 'utf8'));
+          metadataCallback?.(packageJson.version);
+          return;
+        }
+
+        // Try require.resolve as fallback
+        try {
+          const reactPath = require.resolve('react/package.json');
+          const packageJson = JSON.parse(fs.readFileSync(reactPath, 'utf8'));
+          metadataCallback?.(packageJson.version);
+        } catch (e) {
+          metadataCallback?.('unknown');
+        }
+        
+      } catch (error) {
+        metadataCallback?.('unknown');
+      }
+    }
+  };
+};
