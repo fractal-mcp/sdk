@@ -10,7 +10,6 @@ import {
   introspectServerUrl,
   generateToolTypes,
 } from "@fractal-mcp/generate";
-import { startServer } from "@fractal-mcp/preview";
 import * as readline from "readline";
 
 

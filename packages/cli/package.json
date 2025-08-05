@@ -22,7 +22,6 @@
       "@fractal-mcp/bundle": "*",
       "@fractal-mcp/render": "*",
       "@fractal-mcp/generate": "*",
-      "@fractal-mcp/preview": "*",
       "commander": "^11.0.0",
       "ora": "^8.0.1",
       "express": "^4.18.0"
