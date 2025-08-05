@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/shared-ui",
-  "version": "1.0.0",
+  "version": "0.7.0",
   "description": "Shared utilities for Fractal UI messaging",
   "type": "module",
   "main": "./dist/index.js",
