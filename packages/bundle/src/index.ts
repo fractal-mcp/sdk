@@ -1,4 +1,4 @@
-import { build, defineConfig } from 'vite';
+import { build, defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
@@ -152,7 +152,7 @@ export const bundle = async (
 export default bundle;
 
 // Plugin to log the React version that Vite actually resolves
-const reactVersionLogger = (metadataCallback?: (version: string) => void) => {
+const reactVersionLogger = (metadataCallback?: (version: string) => void): Plugin => {
   return {
     name: 'react-version-logger',
     async buildStart(this: any) {
