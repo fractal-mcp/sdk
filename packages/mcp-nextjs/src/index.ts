@@ -114,13 +114,14 @@ export function createFractalTokenVerifier(config: FractalAuthConfig = {}) {
  */
 export function addFractalCorsHeaders(response: Response, config: FractalCorsConfig = {}): Response {
   const {
-    origins = "*",
+    origins = "https://registry.fractalmcp.com",
     methods = ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     headers = ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization", "mcp-session-id"]
   } = config;
 
   const responseHeaders = new Headers(response.headers);
   responseHeaders.set("Access-Control-Allow-Origin", Array.isArray(origins) ? origins.join(", ") : origins);
+  responseHeaders.set("Access-Control-Allow-Credentials", "true");
   responseHeaders.set("Access-Control-Allow-Methods", Array.isArray(methods) ? methods.join(", ") : methods);
   responseHeaders.set("Access-Control-Allow-Headers", Array.isArray(headers) ? headers.join(", ") : headers);
   responseHeaders.set("Access-Control-Allow-Private-Network", "true"); // <-- added
@@ -137,7 +138,7 @@ export function addFractalCorsHeaders(response: Response, config: FractalCorsCon
  */
 export function createFractalOptionsHandler(config: FractalCorsConfig = {}) {
   const {
-    origins = "*",
+    origins = "https://registry.fractalmcp.com",
     methods = ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     headers = ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization", "mcp-session-id"]
   } = config;
@@ -147,6 +148,7 @@ export function createFractalOptionsHandler(config: FractalCorsConfig = {}) {
       status: 200,
       headers: {
         "Access-Control-Allow-Origin": Array.isArray(origins) ? origins.join(", ") : origins,
+        "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Methods": Array.isArray(methods) ? methods.join(", ") : methods,
         "Access-Control-Allow-Headers": Array.isArray(headers) ? headers.join(", ") : headers,
         "Access-Control-Allow-Private-Network": "true" // <-- added
