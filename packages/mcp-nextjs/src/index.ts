@@ -123,13 +123,14 @@ export function addFractalCorsHeaders(response: Response, config: FractalCorsCon
   responseHeaders.set("Access-Control-Allow-Origin", Array.isArray(origins) ? origins.join(", ") : origins);
   responseHeaders.set("Access-Control-Allow-Methods", Array.isArray(methods) ? methods.join(", ") : methods);
   responseHeaders.set("Access-Control-Allow-Headers", Array.isArray(headers) ? headers.join(", ") : headers);
-  
+  responseHeaders.set("Access-Control-Allow-Private-Network", "true"); // <-- added
+
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
     headers: responseHeaders
-        });
-      }
+  });
+}
       
 /**
  * Creates CORS preflight OPTIONS handler
@@ -148,6 +149,7 @@ export function createFractalOptionsHandler(config: FractalCorsConfig = {}) {
         "Access-Control-Allow-Origin": Array.isArray(origins) ? origins.join(", ") : origins,
         "Access-Control-Allow-Methods": Array.isArray(methods) ? methods.join(", ") : methods,
         "Access-Control-Allow-Headers": Array.isArray(headers) ? headers.join(", ") : headers,
+        "Access-Control-Allow-Private-Network": "true" // <-- added
       }
     });
   };
