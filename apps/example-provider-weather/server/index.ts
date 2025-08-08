@@ -1,4 +1,4 @@
-import { Express } from 'express';
+import Express from 'express';
 import { makeExpressApp } from '@fractal-mcp/mcp-express';
 import { FractalMCPServer } from '@fractal-mcp/mcp';
 import { getCurrentWeather, getHourlyForecast } from './lib.js';
@@ -43,7 +43,7 @@ async function main() {
   console.log("Connecting to transport");
   
   // Use the fractal-serve function instead of custom server logic
-  const app = new Express
+  const app = Express()
   makeExpressApp(app, mcpServer, )
   
   console.log(`Weather MCP server running on http://localhost:${port}/mcp`);
