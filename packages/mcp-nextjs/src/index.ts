@@ -26,71 +26,45 @@ const fetchPublicKey = async (jwksUrl: string = DEFAULT_JWKS_URL): Promise<strin
   return pubKey;
 };
 
-export interface FractalAuthConfig {
-  jwksUrl?: string;
-  issuer?: string;
-  audience?: string;
-  required?: boolean;
-  requiredScopes?: string[];
-  allowLocalhost?: boolean;
-}
-
-export interface FractalCorsConfig {
-  origins?: string | string[];
-  methods?: string[];
-  headers?: string[];
-}
-
-export interface FractalMcpConfig {
-  auth?: FractalAuthConfig;
-  cors?: FractalCorsConfig;
+export interface FractalMcpOptions {
+  auth?: boolean;
+  cors?: boolean;
   basePath?: string;
-  maxDuration?: number;
-  verboseLogs?: boolean;
 }
 
 /**
  * Creates a Fractal token verification function
  */
-export function createFractalTokenVerifier(config: FractalAuthConfig = {}) {
-  const {
-    jwksUrl = DEFAULT_JWKS_URL,
-    issuer = "fractal-auth",
-    audience = "fractal",
-    allowLocalhost = true
-  } = config;
-
+export function createFractalTokenVerifier() {
   return async (req: Request, bearerToken?: string): Promise<AuthInfo | undefined> => {
-    // Skip auth for localhost requests if allowed
-    if (allowLocalhost) {
-      const url = new URL(req.url);
-      const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-  
-      if (isLocalhost) {
-    return { 
-          token: "localhost-token",
-          clientId: "localhost-client",
-          scopes: ["read", "write"],
-          extra: { 
-            userId: "localhost-user",
-            sub: "localhost", 
-            iss: "localhost" 
-          }
-    };
-  }
+    // Skip auth for localhost requests
+    const url = new URL(req.url);
+    const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+
+    if (isLocalhost) {
+      return { 
+        token: "localhost-token",
+        clientId: "localhost-client",
+        scopes: ["read", "write"],
+        extra: { 
+          userId: "localhost-user",
+          sub: "localhost", 
+          iss: "localhost" 
+        }
+      };
     }
 
     if (!bearerToken) {
       throw new Error("missing_token");
     }
 
-  try {
-      const publicKey = await fetchPublicKey(jwksUrl);
+    try {
+      const publicKey = await fetchPublicKey(DEFAULT_JWKS_URL);
       
       const payload = jwt.verify(bearerToken, publicKey, {
         algorithms: ["RS256"],
-        issuer,
-        audience,
+        issuer: "fractal-auth",
+        audience: "fractal",
       }) as any;
 
       return {
@@ -107,24 +81,18 @@ export function createFractalTokenVerifier(config: FractalAuthConfig = {}) {
       throw new Error(`invalid_token: ${(err as Error).message}`);
     }
   };
-    }
+}
 
 /**
  * Adds CORS headers to a response
  */
-export function addFractalCorsHeaders(response: Response, config: FractalCorsConfig = {}): Response {
-  const {
-    origins = "https://registry.fractalmcp.com",
-    methods = ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-    headers = ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization", "mcp-session-id"]
-  } = config;
-
+export function addFractalCorsHeaders(response: Response): Response {
   const responseHeaders = new Headers(response.headers);
-  responseHeaders.set("Access-Control-Allow-Origin", Array.isArray(origins) ? origins.join(", ") : origins);
-  responseHeaders.set("Access-Control-Allow-Credentials", "true");
-  responseHeaders.set("Access-Control-Allow-Methods", Array.isArray(methods) ? methods.join(", ") : methods);
-  responseHeaders.set("Access-Control-Allow-Headers", Array.isArray(headers) ? headers.join(", ") : headers);
-  responseHeaders.set("Access-Control-Allow-Private-Network", "true"); // <-- added
+  responseHeaders.set("Access-Control-Allow-Origin", "*");
+  responseHeaders.set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
+  responseHeaders.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, mcp-session-id, mcp-protocol-version, mcp-server-name, mcp-server-version, mcp-client-name, mcp-client-version");
+  responseHeaders.set("Access-Control-Expose-Headers", "mcp-session-id, mcp-protocol-version, mcp-server-name, mcp-server-version, mcp-client-name, mcp-client-version");
+  responseHeaders.set("Access-Control-Max-Age", "86400"); // Cache preflight for 24 hours
 
   return new Response(response.body, {
     status: response.status,
@@ -136,23 +104,10 @@ export function addFractalCorsHeaders(response: Response, config: FractalCorsCon
 /**
  * Creates CORS preflight OPTIONS handler
  */
-export function createFractalOptionsHandler(config: FractalCorsConfig = {}) {
-  const {
-    origins = "https://registry.fractalmcp.com",
-    methods = ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-    headers = ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization", "mcp-session-id"]
-  } = config;
-
+export function createFractalOptionsHandler() {
   return async function OPTIONS(req: Request): Promise<Response> {
     return new Response(null, {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": Array.isArray(origins) ? origins.join(", ") : origins,
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Allow-Methods": Array.isArray(methods) ? methods.join(", ") : methods,
-        "Access-Control-Allow-Headers": Array.isArray(headers) ? headers.join(", ") : headers,
-        "Access-Control-Allow-Private-Network": "true" // <-- added
-      }
+      status: 200
     });
   };
 }
@@ -161,39 +116,16 @@ export function createFractalOptionsHandler(config: FractalCorsConfig = {}) {
  * Factory function that creates authenticated MCP route handlers
  */
 export function createFractalMcpRoute(
-  serverOrCallback: FractalMCPServer | ((server: FractalMCPServer) => void | Promise<void>),
-  config: FractalMcpConfig = {}
+  server: FractalMCPServer,
+  options: FractalMcpOptions = {}
 ) {
-  const {
-    auth = { required: true },
-    cors = {},
-    basePath = "/api",
-    maxDuration = 60,
-    verboseLogs = false
-  } = config;
-
-  // Handle server setup
-  let fractalServer: FractalMCPServer;
-  if (serverOrCallback instanceof FractalMCPServer) {
-    fractalServer = serverOrCallback;
-  } else {
-    // Create a new FractalMCPServer and call the setup function
-    fractalServer = new FractalMCPServer({ 
-      name: "fractal-mcp-server", 
-      version: "1.0.0" 
-    });
-    const result = serverOrCallback(fractalServer);
-    if (result instanceof Promise) {
-      // Note: We can't await here, but the user should handle async setup themselves
-      console.warn("Async server setup detected. Ensure setup completes before handling requests.");
-    }
-  }
+  const { auth = true, cors = true, basePath = "/api" } = options;
 
   // Create base MCP handler using a setup function
   const baseHandler = createMcpHandler(
-    (server) => {
+    (mcpServer) => {
         // Connect the FractalMCPServer tools to this server instance
-        fractalServer.connectToServer(server);
+        server.connectToServer(mcpServer);
     },
     {
       serverInfo: {
@@ -202,30 +134,25 @@ export function createFractalMcpRoute(
       }
     },
     {
-      basePath,
-      maxDuration,
-      verboseLogs
+      basePath
     }
   );
 
-  // Create token verifier
-  const verifyToken = createFractalTokenVerifier(auth);
-
   // Wrap with auth if required
-  const handler = auth.required 
-    ? withMcpAuth(baseHandler, verifyToken, {
-        required: auth.required,
-        requiredScopes: auth.requiredScopes
-      })
-    : baseHandler;
+  let handler = baseHandler;
+  if (auth) {
+    const verifyToken = createFractalTokenVerifier();
+    handler = withMcpAuth(baseHandler, verifyToken, {
+      required: true
+    });
+  }
 
-  // Create wrapped handlers with CORS
+  // Create wrapped handlers with optional CORS
   const wrappedHandler = async (req: Request): Promise<Response> => {
     try {
       const response = await handler(req);
-      return addFractalCorsHeaders(response, cors);
+      return cors ? addFractalCorsHeaders(response) : response;
     } catch (error) {
-      console.error('❌ Error in MCP handler:', error);
       const errorResponse = new Response(JSON.stringify({ 
         error: 'Internal server error', 
         details: error instanceof Error ? error.message : 'Unknown error' 
@@ -233,13 +160,19 @@ export function createFractalMcpRoute(
         status: 500,
         headers: { 'Content-Type': 'application/json' }
       });
-      return addFractalCorsHeaders(errorResponse, cors);
+      return cors ? addFractalCorsHeaders(errorResponse) : errorResponse;
     }
+  };
+
+  // Create wrapped OPTIONS handler with optional CORS
+  const optionsHandler = async (req: Request): Promise<Response> => {
+    const response = new Response(null, { status: 200 });
+    return cors ? addFractalCorsHeaders(response) : response;
   };
 
   return {
     GET: wrappedHandler,
     POST: wrappedHandler,
-    OPTIONS: createFractalOptionsHandler(cors)
+    OPTIONS: optionsHandler
   };
 }

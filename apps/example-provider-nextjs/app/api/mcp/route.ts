@@ -60,15 +60,9 @@ server.tool({
       }
     });
 
-// Create the route handlers
-const { GET, POST, OPTIONS } = createFractalMcpRoute(server, {
-    auth: {
-    required: false, // Set to true in production
-      allowLocalhost: true
-    },
-    cors: {
-      origins: "*"
-  }
-});
+// Create the route handlers with debug logging
+console.log("Creating MCP route handlers...");
+const { GET, POST, OPTIONS } = createFractalMcpRoute(server, { basePath: "/api"});
+console.log("Route handlers created successfully");
 
 export { GET, POST, OPTIONS };
