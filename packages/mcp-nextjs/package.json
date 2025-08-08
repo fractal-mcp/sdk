@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/mcp-nextjs",
-  "version": "1.0.0",
+  "version": "0.8.0",
   "description": "Next.js API utilities for MCP server hosting",
   "type": "module",
   "main": "./dist/index.js",
@@ -16,7 +16,7 @@
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "@fractal-mcp/mcp": "*",
+    "@fractal-mcp/mcp": "0.8.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@vercel/mcp-adapter": "^1.0.0",
     "jsonwebtoken": "^9.0.0",
