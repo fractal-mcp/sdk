@@ -4,6 +4,7 @@ import * as path from "path";
 import { exec } from "child_process";
 import { Command } from "commander";
 import ora from "ora";
+import prompts, { PromptObject } from "prompts";
 import { bundle } from "@fractal-mcp/bundle";
 
 import {
@@ -292,6 +293,127 @@ program
       process.exit(1);
     }
   });
+
+
+
+// --- types ---
+type ReactVersion = "18" | "19";
+type ServerFramework = "express" | "nextjs";
+
+interface CreateFractalAppConfig {
+    reactVersion: ReactVersion;
+    serverFramework: ServerFramework;
+    serverPath: string;
+    uiPath: string;
+}
+
+// --- stubbed impl for this step ---
+async function createFractalApp(config: CreateFractalAppConfig): Promise<void> {
+    // dummy for step 1
+    console.log("\ncreateFractalApp() received config:");
+    console.log(JSON.stringify(config, null, 4));
+}
+
+// Small helper to fail gracefully when user cancels a prompt
+function assertNotCancelled<T extends Record<string, unknown>>(answers: T): T {
+    if (!answers || (answers as any).__cancelled) {
+        console.log("Operation cancelled.");
+        process.exit(0);
+    }
+    return answers;
+}
+
+// --- command ---
+program
+  .command("create")
+  .description("Interactively initialize a new Fractal app (step 1: gather config)")
+  .option("-y, --yes", "Accept defaults without prompting")
+  .action(async (options) => {
+      const spinner = ora("Preparing interactive setup...").start();
+
+      try {
+          // defaults
+          const defaultConfig: CreateFractalAppConfig = {
+              reactVersion: "19",
+              serverFramework: "nextjs",
+              serverPath: "./server/",
+              uiPath: "./ui/"
+          };
+
+          spinner.stop();
+
+          let finalConfig: CreateFractalAppConfig;
+
+          if (options.yes) {
+              // Skip prompts; take defaults
+              finalConfig = defaultConfig;
+              console.log("Using defaults (--yes):");
+              console.log(JSON.stringify(finalConfig, null, 4));
+          } else {
+              // Interactive prompts
+              const questions: PromptObject[] = [
+                  {
+                      type: "select",
+                      name: "reactVersion",
+                      message: "React Version",
+                      choices: [
+                          { title: "18", value: "18" },
+                          { title: "19", value: "19" }
+                      ],
+                      initial: 1 // default to 19
+                  },
+                  {
+                      type: "select",
+                      name: "serverFramework",
+                      message: "Server framework",
+                      choices: [
+                          { title: "Express", value: "express" },
+                          { title: "Next.js", value: "nextjs" }
+                      ],
+                      initial: 1 // default to nextjs
+                  },
+                  {
+                      type: "text",
+                      name: "serverPath",
+                      message: "Server path",
+                      initial: "./server/",
+                      validate: (val: string) => val?.trim().length > 0 || "Path cannot be empty"
+                  },
+                  {
+                      type: "text",
+                      name: "uiPath",
+                      message: "UI path",
+                      initial: "./ui/",
+                      validate: (val: string) => val?.trim().length > 0 || "Path cannot be empty"
+                  }
+              ];
+
+              const onCancel = () => {
+                  // mark a cancellation so we can exit cleanly
+                  return { __cancelled: true } as any;
+              };
+
+              const answers = (await prompts(questions, { onCancel })) as any;
+              assertNotCancelled(answers);
+
+              finalConfig = {
+                  reactVersion: answers.reactVersion as ReactVersion,
+                  serverFramework: answers.serverFramework as ServerFramework,
+                  serverPath: answers.serverPath,
+                  uiPath: answers.uiPath
+              };
+          }
+
+          const runSpinner = ora("Calling createFractalApp...").start();
+          await createFractalApp(finalConfig);
+          runSpinner.succeed("Done.");
+      } catch (err) {
+          spinner.fail("Initialization failed");
+          console.error(err instanceof Error ? err.message : err);
+          process.exit(1);
+      }
+  });
+
 
 // Handle the case where no command is provided
 if (process.argv.length <= 2) {
