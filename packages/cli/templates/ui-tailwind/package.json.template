@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "bundle-all": "npx @fractal-mcp/cli bundle-all -s . -d ../bundled"
+    "bundle-all": "npx @fractal-mcp/cli bundle-all -s . -d ../{{SERVER_DIR}}/bundled"
   },
   "dependencies": {
     "@fractal-mcp/composer": "*",

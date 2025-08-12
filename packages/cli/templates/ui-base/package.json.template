@@ -5,13 +5,6 @@
   "type": "module",
   "scripts": {
     "bundle-all": "npx @fractal-mcp/cli bundle-all -s ./ ../{{SERVER_DIR}}/bundled"
-{
-  "name": "{{PROJECT_NAME}}-ui",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "bundle-all": "npx @fractal-mcp/cli bundle-all -s . -d ../bundled"
   },
   "dependencies": {
     "@fractal-mcp/composer": "*",

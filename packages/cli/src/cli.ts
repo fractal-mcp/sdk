@@ -367,6 +367,19 @@ function runNpmInstall(directory: string): Promise<void> {
     });
 }
 
+// Helper function to run npm run bundle-all
+function runBundleAll(directory: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        exec('npm run bundle-all', { cwd: directory }, (error, stdout, stderr) => {
+            if (error) {
+                reject(new Error(`npm run bundle-all failed in ${directory}: ${error.message}`));
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
 // Main implementation
 async function createFractalApp(config: CreateFractalAppConfig): Promise<void> {
     const cliDir = path.dirname(new URL(import.meta.url).pathname);
@@ -412,11 +425,19 @@ async function createFractalApp(config: CreateFractalAppConfig): Promise<void> {
         ]);
         console.log('✓ Dependencies installed');
 
+        // Bundle UI components
+        console.log('\nBundling UI components...');
+        try {
+            await runBundleAll(uiPath);
+            console.log('✓ UI components bundled');
+        } catch (error) {
+            console.log('⚠️  UI bundling failed (this is optional):', error instanceof Error ? error.message : error);
+        }
+
         // Success message
         console.log(`\n🎉 Fractal app "${config.projectName}" created successfully!`);
         console.log('\nNext steps:');
         console.log(`  cd ${serverPath} && npm run dev  # Start ${config.serverFramework} server`);
-        console.log(`  cd ${uiPath} && npm run bundle-all  # Bundle UI components`);
         
     } catch (error) {
         throw new Error(`Failed to create Fractal app: ${error instanceof Error ? error.message : error}`);

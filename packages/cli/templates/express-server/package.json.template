@@ -7,7 +7,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
+    "dev": "npm run build && npm run start",
     "start": "node dist/index.js"
   },
   "files": [

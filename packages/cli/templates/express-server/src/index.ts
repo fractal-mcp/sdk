@@ -21,9 +21,15 @@ server.componentTool({
   inputSchema: { num: z.number().describe("Number to square") },
   price: 100,
   handler: async ({ num }) => {
-    return {
-      result: num * num
-    };
+    try {
+      return {
+        num: num,
+        result: num * num
+      };
+    } catch (error) {
+      console.error('Error in square_number_ui tool:', error);
+      throw error;
+    }
   },
 });
 
@@ -35,9 +41,14 @@ server.tool({
     num: z.number().describe("The number to multiply by ten")
   },
   handler: async ({ num }) => {
-    return {
-      result: num * 10
-    };
+    try {
+      return {
+        result: num * 10
+      };
+    } catch (error) {
+      console.error('Error in times_ten tool:', error);
+      throw error;
+    }
   }
 });
 
