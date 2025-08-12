@@ -4,6 +4,7 @@ import * as path from "path";
 import { exec } from "child_process";
 import { Command } from "commander";
 import ora from "ora";
+import prompts, { PromptObject } from "prompts";
 import { bundle } from "@fractal-mcp/bundle";
 
 import {
@@ -292,6 +293,320 @@ program
       process.exit(1);
     }
   });
+
+
+
+// --- types ---
+type ReactVersion = "18" | "19";
+type ServerFramework = "express" | "nextjs";
+
+interface CreateFractalAppConfig {
+    // Project options
+    projectName: string;
+    outputDirectory: string;
+    
+    // UI-specific options
+    reactVersion: ReactVersion;
+    includeTailwind: boolean;
+    
+    // Server-specific options
+    serverFramework: ServerFramework;
+}
+
+// Helper function to replace template variables in file content
+function replaceTemplateVariables(content: string, variables: Record<string, string>): string {
+    let result = content;
+    for (const [key, value] of Object.entries(variables)) {
+        result = result.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    }
+    return result;
+}
+
+// Helper function to copy and process template files
+async function copyTemplate(
+    templateDir: string,
+    targetDir: string,
+    variables: Record<string, string>
+): Promise<void> {
+    if (!fs.existsSync(templateDir)) {
+        throw new Error(`Template directory not found: ${templateDir}`);
+    }
+
+    // Create target directory
+    fs.mkdirSync(targetDir, { recursive: true });
+
+    // Read all files in template directory
+    const files = fs.readdirSync(templateDir, { withFileTypes: true });
+
+    for (const file of files) {
+        const sourcePath = path.join(templateDir, file.name);
+        const targetPath = path.join(targetDir, file.name.replace('.template', ''));
+
+        if (file.isDirectory()) {
+            // Recursively copy subdirectories
+            await copyTemplate(sourcePath, targetPath, variables);
+        } else {
+            // Copy and process file
+            const content = fs.readFileSync(sourcePath, 'utf8');
+            const processedContent = replaceTemplateVariables(content, variables);
+            fs.writeFileSync(targetPath, processedContent);
+        }
+    }
+}
+
+// Helper function to run npm install
+function runNpmInstall(directory: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        exec('npm install', { cwd: directory }, (error, stdout, stderr) => {
+            if (error) {
+                reject(new Error(`npm install failed in ${directory}: ${error.message}`));
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
+// Helper function to run npm run bundle-all
+function runBundleAll(directory: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        exec('npm run bundle-all', { cwd: directory }, (error, stdout, stderr) => {
+            if (error) {
+                reject(new Error(`npm run bundle-all failed in ${directory}: ${error.message}`));
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
+// Main implementation
+async function createFractalApp(config: CreateFractalAppConfig): Promise<void> {
+    const cliDir = path.dirname(new URL(import.meta.url).pathname);
+    const templatesDir = path.join(cliDir, '..', 'templates');
+
+    // Ensure output directory exists
+    fs.mkdirSync(config.outputDirectory, { recursive: true });
+
+    // Resolve absolute paths for UI and server directories within output directory
+    const uiPath = path.resolve(config.outputDirectory, "./ui");
+    const serverDirName = "server" // config.serverFramework === "nextjs" ? "app" : "server";
+    const serverPath = path.resolve(config.outputDirectory, serverDirName);
+
+    const variables = {
+        PROJECT_NAME: config.projectName,
+        REACT_VERSION: config.reactVersion,
+        SERVER_DIR: serverDirName,
+    };
+
+    console.log(`\nCreating Fractal app: ${config.projectName}`);
+    console.log(`Output directory: ${config.outputDirectory}`);
+    console.log(`UI: React ${config.reactVersion}${config.includeTailwind ? ' + Tailwind' : ''} → ${uiPath}`);
+    console.log(`Server: ${config.serverFramework} → ${serverPath}`);
+
+    try {
+        // Copy UI template
+        const uiTemplate = config.includeTailwind ? 'ui-tailwind' : 'ui-base';
+        const uiTemplatePath = path.join(templatesDir, uiTemplate);
+        await copyTemplate(uiTemplatePath, uiPath, variables);
+        console.log(`✓ UI template copied to ${uiPath}`);
+
+        // Copy server template
+        const serverTemplate = config.serverFramework === 'nextjs' ? 'nextjs-server' : 'express-server';
+        const serverTemplatePath = path.join(templatesDir, serverTemplate);
+        await copyTemplate(serverTemplatePath, serverPath, variables);
+        console.log(`✓ Server template copied to ${serverPath}`);
+
+        // Install dependencies
+        console.log('\nInstalling dependencies...');
+        await Promise.all([
+            runNpmInstall(uiPath),
+            runNpmInstall(serverPath)
+        ]);
+        console.log('✓ Dependencies installed');
+
+        // Bundle UI components
+        console.log('\nBundling UI components...');
+        try {
+            await runBundleAll(uiPath);
+            console.log('✓ UI components bundled');
+        } catch (error) {
+            console.log('⚠️  UI bundling failed (this is optional):', error instanceof Error ? error.message : error);
+        }
+
+        // Success message
+        console.log(`\n🎉 Fractal app "${config.projectName}" created successfully!`);
+        console.log('\nNext steps:');
+        console.log(`  cd ${serverPath} && npm run dev  # Start ${config.serverFramework} server`);
+        
+    } catch (error) {
+        throw new Error(`Failed to create Fractal app: ${error instanceof Error ? error.message : error}`);
+    }
+}
+
+// Small helper to fail gracefully when user cancels a prompt
+function assertNotCancelled<T extends Record<string, unknown>>(answers: T): T {
+    if (!answers || (answers as any).__cancelled) {
+        console.log("Operation cancelled.");
+        process.exit(0);
+    }
+    return answers;
+}
+
+// --- command ---
+program
+  .command("create")
+  .description("Initialize a new Fractal app")
+  .option("-y, --yes", "Accept defaults without prompting")
+  .option("--project-name <name>", "Project name")
+  .option("--output-directory <path>", "Output directory")
+  .option("--react-version <version>", "React version (18 or 19)")
+  .option("--no-tailwind", "Disable Tailwind CSS (enabled by default)")
+  .option("--server-framework <framework>", "Server framework (express or nextjs)")
+  .action(async (options) => {
+      const spinner = ora("Preparing interactive setup...").start();
+
+      try {
+          // Step 1: Collect args from command line
+          const cliArgs: Partial<CreateFractalAppConfig> = {};
+          
+          if (options.projectName) {
+              if (!/^[a-zA-Z0-9-_]+$/.test(options.projectName.trim())) {
+                  throw new Error("Project name can only contain letters, numbers, hyphens, and underscores");
+              }
+              cliArgs.projectName = options.projectName.trim();
+          }
+          
+          if (options.outputDirectory) {
+              cliArgs.outputDirectory = path.resolve(options.outputDirectory);
+          }
+          
+          if (options.reactVersion) {
+              if (!["18", "19"].includes(options.reactVersion)) {
+                  throw new Error("React version must be 18 or 19");
+              }
+              cliArgs.reactVersion = options.reactVersion as ReactVersion;
+          }
+          
+          if (options.noTailwind !== undefined) {
+              cliArgs.includeTailwind = !options.noTailwind;
+          }
+          
+          if (options.serverFramework) {
+              if (!["express", "nextjs"].includes(options.serverFramework)) {
+                  throw new Error("Server framework must be 'express' or 'nextjs'");
+              }
+              cliArgs.serverFramework = options.serverFramework as ServerFramework;
+          }
+
+          // defaults
+          const defaultConfig: CreateFractalAppConfig = {
+              projectName: "my-fractal-app",
+              outputDirectory: "./",
+              reactVersion: "19",
+              includeTailwind: true,
+              serverFramework: "nextjs"
+          };
+
+          let finalConfig: CreateFractalAppConfig;
+
+          if (options.yes) {
+              // Use CLI args + defaults without prompting
+              finalConfig = { ...defaultConfig, ...cliArgs };
+              spinner.stop();
+          } else {
+              // Step 2: Prompt for remaining args
+              spinner.stop(); // Stop spinner before prompting
+              const questions: PromptObject[] = [];
+              
+              if (cliArgs.projectName === undefined) {
+                  questions.push({
+                      type: "text",
+                      name: "projectName",
+                      message: "Project name",
+                      initial: defaultConfig.projectName,
+                      validate: (val: string) => {
+                          const trimmed = val?.trim();
+                          if (!trimmed) return "Project name cannot be empty";
+                          if (!/^[a-zA-Z0-9-_]+$/.test(trimmed)) return "Project name can only contain letters, numbers, hyphens, and underscores";
+                          return true;
+                      }
+                  });
+              }
+              
+              if (cliArgs.outputDirectory === undefined) {
+                  questions.push({
+                      type: "text",
+                      name: "outputDirectory",
+                      message: "Output directory",
+                      initial: defaultConfig.outputDirectory,
+                      validate: (val: string) => val?.trim().length > 0 || "Directory cannot be empty"
+                  });
+              }
+              
+              if (cliArgs.reactVersion === undefined) {
+                  questions.push({
+                      type: "select",
+                      name: "reactVersion",
+                      message: "React Version",
+                      choices: [
+                          { title: "18", value: "18" },
+                          { title: "19", value: "19" }
+                      ],
+                      initial: defaultConfig.reactVersion === "19" ? 1 : 0
+                  });
+              }
+              
+              if (cliArgs.includeTailwind === undefined) {
+                  questions.push({
+                      type: "confirm",
+                      name: "includeTailwind",
+                      message: "Include Tailwind CSS?",
+                      initial: defaultConfig.includeTailwind
+                  });
+              }
+              
+              if (cliArgs.serverFramework === undefined) {
+                  questions.push({
+                      type: "select",
+                      name: "serverFramework",
+                      message: "Server framework",
+                      choices: [
+                          { title: "Express", value: "express" },
+                          { title: "Next.js", value: "nextjs" }
+                      ],
+                      initial: defaultConfig.serverFramework === "nextjs" ? 1 : 0
+                  });
+              }
+
+              const answers = questions.length > 0 ? await prompts(questions) : {};
+              
+              // Check if user cancelled prompts
+              if (questions.length > 0 && (!answers || Object.keys(answers).length === 0)) {
+                  console.log("Operation cancelled.");
+                  process.exit(0);
+              }
+
+              // Merge CLI args, prompted answers, and defaults
+              finalConfig = {
+                  projectName: cliArgs.projectName ?? answers.projectName ?? defaultConfig.projectName,
+                  outputDirectory: cliArgs.outputDirectory ?? (answers.outputDirectory ? path.resolve(answers.outputDirectory) : path.resolve(defaultConfig.outputDirectory)),
+                  reactVersion: cliArgs.reactVersion ?? answers.reactVersion ?? defaultConfig.reactVersion,
+                  includeTailwind: cliArgs.includeTailwind ?? answers.includeTailwind ?? defaultConfig.includeTailwind,
+                  serverFramework: cliArgs.serverFramework ?? answers.serverFramework ?? defaultConfig.serverFramework
+              };
+          }
+
+          const runSpinner = ora("Calling createFractalApp...").start();
+          await createFractalApp(finalConfig);
+          runSpinner.succeed("Done.");
+      } catch (err) {
+          spinner.fail("Initialization failed");
+          console.error(err instanceof Error ? err.message : err);
+          process.exit(1);
+      }
+  });
+
 
 // Handle the case where no command is provided
 if (process.argv.length <= 2) {
