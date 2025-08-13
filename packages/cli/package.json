@@ -16,7 +16,8 @@
         "test": "jest --passWithNoTests"
     },
     "files": [
-        "dist"
+        "dist",
+        "templates"
     ],
     "dependencies": {
         "@fractal-mcp/bundle": "*",
