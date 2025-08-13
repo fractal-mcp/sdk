@@ -99,7 +99,7 @@ export class FractalSDK extends Client {
     // Temporary storage for component tool outputs
     // Used to provide a destination for component tool outputs
     // so that they can bypass the LLM context.
-    private componentToolOutputs: Map<string, ComponentToolOutput> = new Map();
+    public componentToolOutputs: Map<string, ComponentToolOutput> = new Map();
 
     // The access token and refresh token
     private accessToken: string | null = null;
@@ -238,6 +238,18 @@ export class FractalSDK extends Client {
         }
 
         return result;
+    }
+
+    /**
+     * Little hack to call tools without the component cache.
+     * Does not support renderLayout
+     * @param params 
+     * @param resultSchema 
+     * @param options 
+     * @returns 
+     */
+    callToolDirect(params: CallToolRequest['params'], resultSchema?: any, options?: RequestOptions) {
+        return super.callTool(params, resultSchema, options).then(res => MCPToolOutputSchema.parse(res));
     }
 
     /**
