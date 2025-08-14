@@ -11,6 +11,7 @@ import {
 
 export type FractalSDKInitOptions = {
     apiKey: string;      // JWT from fractal-auth
+    userId?: string;
     baseUrl?: string;       // e.g. https://fractalwhatever.ai
     authUrl?: string;       // e.g. http://localhost:8080/registry-auth
 };
@@ -87,6 +88,9 @@ export class FractalSDK extends Client {
     // You should have a consumer API key from fractal
     private readonly apiKey: string;
 
+    // Support first class end user id
+    private readonly userId: string | undefined;
+
     // Optional, defaults to http://localhost:5055
     private readonly baseUrl: string;
 
@@ -109,6 +113,7 @@ export class FractalSDK extends Client {
     constructor(opts: FractalSDKInitOptions) {
         super({ name: 'fractal-sdk-client', version: '1.0.0' });
         this.apiKey = opts.apiKey;
+        this.userId = opts.userId;
         this.baseUrl = opts.baseUrl ?? DEFAULT_REGISTRY_URL;
         this.authUrl = opts.authUrl ?? DEFAULT_AUTH_URL;
     }
@@ -183,6 +188,7 @@ export class FractalSDK extends Client {
         const headers: Record<string, string> = {
             authorization: `Bearer ${accessToken}`,
         };
+        if (this.userId) headers['x-user-id'] = this.userId;
         if (opts.branches?.length) headers['x-registry-branches'] = opts.branches.join(',');
         if (opts.sessionId) headers['mcp-session-id'] = opts.sessionId;
 
