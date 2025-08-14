@@ -188,7 +188,7 @@ export class FractalSDK extends Client {
         const headers: Record<string, string> = {
             authorization: `Bearer ${accessToken}`,
         };
-        if (this.userId) headers['x-user-id'] = this.userId;
+        if (this.userId) headers['x-fractal-user-id'] = this.userId;
         if (opts.branches?.length) headers['x-registry-branches'] = opts.branches.join(',');
         if (opts.sessionId) headers['mcp-session-id'] = opts.sessionId;
 
