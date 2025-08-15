@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/render",
-  "version": "2.1.2",
+  "version": "0.10.0",
   "description": "React iframe host for sandboxed widgets",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,13 +12,15 @@
     "lint": "eslint src --ext .ts,.tsx",
     "test": "jest --passWithNoTests"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "dependencies": {
-    "@fractal-mcp/shared-ui": "^1.0.0",
+    "@fractal-mcp/shared-ui": "0.10.0",
     "react-jsx-parser": "^2.4.0"
   },
   "devDependencies": {
