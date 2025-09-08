@@ -42,6 +42,26 @@ const ComponentToolOpaqueOutputSchema = z.object({
     jsx: z.string(),
 })
 
+const FractalErrorSchema = z.object({
+    error: z.literal(true),
+    errorCode: z.string(),
+    errorType: z.enum([
+        "AUTHENTICATION",
+        "AUTHORIZATION", 
+        "NOT_FOUND",
+        "VALIDATION",
+        "RATE_LIMIT",
+        "SERVER_ERROR",
+        "CONFIGURATION"
+    ]),
+    message: z.string(),
+    details: z.record(z.any()).optional(),
+    timestamp: z.string(),
+    requestId: z.string(),
+});
+
+export type FractalError = z.infer<typeof FractalErrorSchema>;
+
 export type ComponentToolResponse = z.infer<typeof ComponentToolOutputSchema>;
 
 export interface ComponentToolOutput extends ComponentToolResponse {
@@ -222,12 +242,20 @@ export class FractalSDK extends Client {
                 } catch (e) {
                     console.error('Error parsing tool output', e);
                 }
+
+                const id = crypto.randomUUID();
     
+                if (FractalErrorSchema.safeParse(content).success) {
+                    return {
+                        id,
+                        error: content
+                    }
+                }
                 const toolResponse = ComponentToolOutputSchema.parse(content);
 
                 // NOTE: As we move to align with the MCP UI spec, the id, toolname, args, and possibly other fields will need to move into _metadata
                 if (toolResponse.data != null && toolResponse.component != null) {
-                    const id = crypto.randomUUID();
+                    
                     return {
                         id: id,
                         component: toolResponse.component,

@@ -98,7 +98,7 @@ export class FractalVercel {
             // parse as tool call from UI 
             const parsed = UIEventSchema.parse(JSON.parse((lastMessage as { content: string }).content))
             // proxy event back.
-
+            console.log("parsed", parsed)
             // Get the orgiinbal org, server and toolNames 
             const [_org, _server, _tool] = parsed.toolName.split(":")
             const fullToolPath  = [_org, _server, parsed.data.name].join(":")

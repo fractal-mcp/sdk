@@ -1,17 +1,12 @@
 import React, { useState, memo } from 'react';
 import JsxParser from 'react-jsx-parser';
 import { FractalComponent } from './component';
-import { FractalUIEvent } from '@fractal-mcp/shared-ui';
+import { FractalFrameEvent } from './shared';
 
 export interface FractalDefinition {
   component: { html: string };
   data: unknown;
   toolName?: string;
-}
-
-export type FractalFrameEvent = FractalUIEvent & {
-  toolName?: string;
-  componentId: string;
 }
 
 export interface FractalFrameProps {

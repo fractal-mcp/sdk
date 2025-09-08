@@ -1,5 +1,5 @@
 import { useChat } from '@ai-sdk/react';
-import { FractalFrameEvent, FractalComponent } from '@fractal-mcp/render';
+import { FractalFrameEvent, FractalComponent, FractalToolComponent } from '@fractal-mcp/render';
 import { useCallback } from 'react';
 
 export default function Chat() {
@@ -72,10 +72,7 @@ export default function Chat() {
                 if (toolInvocation.toolName === 'fractal_tool_execute') {
                   console.log("TOOL INVOCATION RESULT", toolInvocation.result)
                   if (toolInvocation.result && toolInvocation.result.component && toolInvocation.result.component.html) {
-                    return <FractalComponent 
-                      srcDoc={toolInvocation.result.component.html} 
-                      onEvent={(event) => handleFrameEvent({ ...event, toolName: toolInvocation.toolName, componentId: toolInvocation.result.data.id })} 
-                    />
+                    return <div><FractalToolComponent result={toolInvocation.result} handleFrameEvent={handleFrameEvent} /></div>
                   }
                 }
 
