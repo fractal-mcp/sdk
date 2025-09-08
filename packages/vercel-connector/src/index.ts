@@ -1,6 +1,6 @@
 
-import { FractalSDK, ComponentToolOutput, RENDER_LAYOUT_TOOL } from "@fractal-mcp/client";
-import { pipeDataStreamToResponse, streamText, tool, jsonSchema, formatDataStreamPart, UIMessage, convertToCoreMessages } from 'ai';
+import { FractalSDK } from "@fractal-mcp/client";
+import { pipeDataStreamToResponse, tool, jsonSchema, formatDataStreamPart, UIMessage } from 'ai';
 import { ServerResponse } from 'http';
 import { IncomingMessage } from 'http';
 import { z } from 'zod';
@@ -85,21 +85,6 @@ export class FractalVercel {
         return convertToolsToVercelFormat(tools.tools, this.fractalClient);
     }
 
-    getRenderLayoutTool() {
-        return tool({
-            description: RENDER_LAYOUT_TOOL.description,
-            parameters: jsonSchema(RENDER_LAYOUT_TOOL.inputSchema as any),
-            execute: async (args: unknown) => {
-                // Handle renderLayout tool execution
-                const typedArgs = args as { layout: string; includedIds: string[] };
-                return {
-                    layout: typedArgs.layout,
-                    includedIds: typedArgs.includedIds || []
-                };
-            },
-        });
-    }
-
     /**
      * Handles 'data' messages.
      * If the last message is a 'data' message, it will be parsed as a tool call and the tool will be called.
@@ -134,7 +119,7 @@ export class FractalVercel {
                             ds.write(
                                 formatDataStreamPart('tool_call', {
                                     toolCallId,                 // REQUIRED
-                                    toolName: "renderLayout",     // e.g. "org:server:myComponent"
+                                    toolName: "fractal_tool_execute",     // e.g. "org:server:myComponent"
                                     args: parsed.data.params    // must be a plain object
                                 }),
                             );
@@ -144,7 +129,7 @@ export class FractalVercel {
                             ds.write(
                                 formatDataStreamPart('tool_result', {
                                     toolCallId,                 // SAME id ties call ↔ result
-                                    result: {data}                      // any JSON-serialisable value
+                                    result: data,
                                 }),
                             );
                         

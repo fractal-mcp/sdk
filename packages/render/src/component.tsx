@@ -134,9 +134,3 @@ export const FractalComponent = forwardRef(function FractalComponent(
     />
   );
 });
-
-// TODO delete this.
-// Its only used in consumer example 
-export function useFractalComponent() {
-  return useRef<FractalComponentHandle>(null);
-}

@@ -1,5 +1,5 @@
 import { useChat } from '@ai-sdk/react';
-import { FractalFrameEvent, renderLayout, renderLayoutAsComponent } from '@fractal-mcp/render';
+import { FractalFrameEvent, FractalComponent } from '@fractal-mcp/render';
 import { useCallback } from 'react';
 
 export default function Chat() {
@@ -67,10 +67,16 @@ export default function Chat() {
               // Handle tool invocations
               if (part.type === 'tool-invocation') {
                 const toolInvocation = (part as any).toolInvocation;
-                
-                // Special handling for renderLayout tool
-                if (toolInvocation.toolName === 'renderLayout') {
-                  return <div key={i}>{renderLayoutAsComponent(toolInvocation, handleFrameEvent)}</div>;
+                console.log("TOOL INVOCATION", toolInvocation.toolName)
+
+                if (toolInvocation.toolName === 'fractal_tool_execute') {
+                  console.log("TOOL INVOCATION RESULT", toolInvocation.result)
+                  if (toolInvocation.result && toolInvocation.result.component && toolInvocation.result.component.html) {
+                    return <FractalComponent 
+                      srcDoc={toolInvocation.result.component.html} 
+                      onEvent={(event) => handleFrameEvent({ ...event, toolName: toolInvocation.toolName, componentId: toolInvocation.result.data.id })} 
+                    />
+                  }
                 }
 
                 // Handle other tool calls

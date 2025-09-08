@@ -3,6 +3,8 @@ import type { Response } from 'express';
 import cors from 'cors';
 import { streamText, UIMessage, convertToCoreMessages } from 'ai';
 import { openai } from '@ai-sdk/openai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { google } from '@ai-sdk/google';
 import { FractalSDK } from '@fractal-mcp/client';
 import { FractalVercel, cleanMessages } from '@fractal-mcp/vercel-connector';
 import dotenv from 'dotenv';
@@ -47,7 +49,7 @@ async function getFractalVercel() {
 app.post('/api/chat', async (req, res) => {
   const { messages } = req.body;
   const processedMessages = cleanMessages(messages, ["renderLayout", "renderComponent"]);
-  console.log(processedMessages)
+  // console.log(JSON.stringify(processedMessages, null, 2))
 
   const fractalVercel = await getFractalVercel();
   
@@ -58,9 +60,11 @@ app.post('/api/chat', async (req, res) => {
   
   if (!wasHandled) {
     const tools = await fractalVercel.getTools();
+    // console.log(tools)
 
   const result = streamText({
     model: openai('gpt-4.1'),
+    // model: google('gemini-2.5-flash'),
     system: systemMessage,
     messages: convertToCoreMessages(processedMessages),
     temperature: 0.0,
@@ -68,6 +72,8 @@ app.post('/api/chat', async (req, res) => {
     maxRetries: 3,
     tools,
   });
+  // console.log("RESULT")
+  // console.log(await result)
   result.pipeDataStreamToResponse(res);
   }
 });
