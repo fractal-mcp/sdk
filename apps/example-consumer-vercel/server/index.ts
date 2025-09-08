@@ -1,16 +1,23 @@
 import express from 'express';
 import type { Response } from 'express';
 import cors from 'cors';
-import { streamText, UIMessage, convertToCoreMessages } from 'ai';
+import { streamText,generateText, UIMessage, convertToCoreMessages } from 'ai';
 import { openai } from '@ai-sdk/openai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { FractalSDK } from '@fractal-mcp/client';
 import { FractalVercel, cleanMessages } from '@fractal-mcp/vercel-connector';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
+
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY!,
+});
+
 
 const systemMessage = `
 You are a helpful assistant. Help the user with their questions. 
@@ -45,6 +52,7 @@ async function getFractalVercel() {
 }
 
 app.post('/api/chat', async (req, res) => {
+  console.log("HI HERE 1!!");
   const { messages } = req.body;
   const processedMessages = cleanMessages(messages, ["renderLayout", "renderComponent"]);
   console.log(processedMessages)
@@ -60,7 +68,7 @@ app.post('/api/chat', async (req, res) => {
     const tools = await fractalVercel.getTools();
 
   const result = streamText({
-    model: openai('gpt-4.1'),
+    model: google("gemini-2.5-flash"),
     system: systemMessage,
     messages: convertToCoreMessages(processedMessages),
     temperature: 0.0,
@@ -68,6 +76,8 @@ app.post('/api/chat', async (req, res) => {
     maxRetries: 3,
     tools,
   });
+
+  console.log("HI HERE 2!!");
   result.pipeDataStreamToResponse(res);
   }
 });
