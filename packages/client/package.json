@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/client",
-  "version": "2.1.2",
+  "version": "0.11.1",
   "description": "A consumer agent package (template)",
   "type": "module",
   "main": "./dist/index.js",
