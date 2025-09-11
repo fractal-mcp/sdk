@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/composer",
-  "version": "2.1.0",
+  "version": "0.11.4",
   "description": "Provider UI components and utilities for MCP integration",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@fractal-mcp/shared-ui": "^1.0.0"
+    "@fractal-mcp/shared-ui": "0.11.4"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
