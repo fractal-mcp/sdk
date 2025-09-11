@@ -1,5 +1,5 @@
-export { FractalComponent, useFractalComponent } from './component';
+export { FractalComponent, FractalToolComponent, FractalUIComponent } from './component';
 export type { FractalComponentHandle, CommandHandlers } from './component';
-export { FractalFrame, renderLayout, renderLayoutAsComponent } from './frame';
-export type { FractalDefinition, FractalFrameProps, FractalFrameEvent } from './frame';
-export { callMcpTool } from './shared';
+export { FractalFrame } from './frame';
+export type { FractalDefinition, FractalFrameProps } from './frame';
+export { callMcpTool, FractalFrameEvent } from './shared';

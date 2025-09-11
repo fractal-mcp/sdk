@@ -1,35 +1,26 @@
 import express from 'express';
 import type { Response } from 'express';
 import cors from 'cors';
-import { streamText, UIMessage, convertToCoreMessages } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { streamText,generateText, UIMessage, convertToCoreMessages } from 'ai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { FractalSDK } from '@fractal-mcp/client';
 import { FractalVercel, cleanMessages } from '@fractal-mcp/vercel-connector';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY!,
+});
+
+
 const systemMessage = `
 You are a helpful assistant. Help the user with their questions. 
-
 You have access to the Fractal tool registry, which provides you the ability to search for different tools. When you encounter a question that requires information from the internet, search for a tool first on fractal.
-
-Some of these tools are "component" tools. These tools return a JSX component template (and some data to fill into the component). When you receive component tools, you should lay them out using the renderLayout tool. When using this tool, always wrap your components in a div container. Use tailwind css classes to style your components.
-The component templates you receive should largely remain unchanged, but you can add classes to the components to style them.
-
-When you make tool calls, you will sometimes receive a snippet of JSX back, such as <Component dataRef="some-unique-data-id" />.
-You can include this in the jsx you render in the renderLayout tool, and it will display the data that the user asked for.
-
-How to use renderLayout tool:
-- The renderLayout tool accepts a snippet of JSX and returns a snippet of html. This html is visible to the user in their browser in the form of a nicely styled UI component.
-- If you have called renderLayout, then you should follow up with a only a very brief message to the user.
-- Do not summarize the components that you see in the renderLayout tool. Do not return jsx or html in your response. Leave this to the renderLayout tool.
-
-IMPORTANT: 
-- Users will be able to see the components from the tools ONLY if you render them using the renderLayout tool.
 
 `;
 
@@ -45,9 +36,10 @@ async function getFractalVercel() {
 }
 
 app.post('/api/chat', async (req, res) => {
+  console.log("HI HERE 1!!");
   const { messages } = req.body;
   const processedMessages = cleanMessages(messages, ["renderLayout", "renderComponent"]);
-  console.log(processedMessages)
+  // console.log(JSON.stringify(processedMessages, null, 2))
 
   const fractalVercel = await getFractalVercel();
   
@@ -58,9 +50,10 @@ app.post('/api/chat', async (req, res) => {
   
   if (!wasHandled) {
     const tools = await fractalVercel.getTools();
+    // console.log(tools)
 
   const result = streamText({
-    model: openai('gpt-4.1'),
+    model: google("gemini-2.5-flash"),
     system: systemMessage,
     messages: convertToCoreMessages(processedMessages),
     temperature: 0.0,
@@ -68,6 +61,8 @@ app.post('/api/chat', async (req, res) => {
     maxRetries: 3,
     tools,
   });
+  // console.log("RESULT")
+  // console.log(await result)
   result.pipeDataStreamToResponse(res);
   }
 });

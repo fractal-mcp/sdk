@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import { Messaging } from '@fractal-mcp/shared-ui';
 import type { FractalEventType, FractalEventByType, FractalUIEvent } from '@fractal-mcp/shared-ui';
-import { callMcpTool } from './shared';
+import { FractalFrameEvent } from './shared';
 
 const FRACTAL_REGISTRY_URL = "http://localhost:3000/api/proxy"
 
@@ -135,8 +135,28 @@ export const FractalComponent = forwardRef(function FractalComponent(
   );
 });
 
-// TODO delete this.
-// Its only used in consumer example 
-export function useFractalComponent() {
-  return useRef<FractalComponentHandle>(null);
+
+// Just an alias for better naming
+export const FractalUIComponent = FractalComponent;
+
+export function FractalToolComponent({ result, handleFrameEvent }: { result: any, handleFrameEvent: (event: FractalFrameEvent) => void }) {
+
+  // This is a UI component, so we need to render it in a div
+  if (result && result.component && result.component.html) {
+    return <div><FractalUIComponent 
+      srcDoc={result.component.html} 
+      onEvent={(event) => handleFrameEvent({ ...event, toolName: result.toolName, componentId: result.data.id })} 
+    /></div>
+  }
+  return null;
 }
+
+// if (toolInvocation.toolName === 'fractal_tool_execute') {
+//   console.log("TOOL INVOCATION RESULT", toolInvocation.result)
+//   if (toolInvocation.result && toolInvocation.result.component && toolInvocation.result.component.html) {
+//     return <div><FractalComponent 
+//       srcDoc={toolInvocation.result.component.html} 
+//       onEvent={(event) => handleFrameEvent({ ...event, toolName: toolInvocation.toolName, componentId: toolInvocation.result.data.id })} 
+//     /></div>
+//   }
+// }

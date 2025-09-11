@@ -42,10 +42,34 @@ const ComponentToolOpaqueOutputSchema = z.object({
     jsx: z.string(),
 })
 
+const FractalErrorSchema = z.object({
+    error: z.literal(true),
+    errorCode: z.string(),
+    errorType: z.enum([
+        "AUTHENTICATION",
+        "AUTHORIZATION", 
+        "NOT_FOUND",
+        "VALIDATION",
+        "RATE_LIMIT",
+        "SERVER_ERROR",
+        "CONFIGURATION"
+    ]),
+    message: z.string(),
+    details: z.record(z.any()).optional(),
+    timestamp: z.string(),
+    requestId: z.string(),
+});
+
+export type FractalError = z.infer<typeof FractalErrorSchema>;
+
 export type ComponentToolResponse = z.infer<typeof ComponentToolOutputSchema>;
 
 export interface ComponentToolOutput extends ComponentToolResponse {
     toolName?: string;
+    toolArguments?: {
+        fractalToolId: string;
+        params: Record<string, any>;
+    };
 }
 export type MCPToolOutput = z.infer<typeof MCPToolOutputSchema>;
 
@@ -60,28 +84,6 @@ const LOCAL_AUTH_URL = 'http://localhost:8080/registry-auth';
 
 const DEFAULT_REGISTRY_URL = "https://mcp.fractalmcp.com";
 const DEFAULT_AUTH_URL = "https://auth.fractalmcp.com";
-
-
-// Tools 
-export const RENDER_LAYOUT_TOOL = {
-    name: 'renderLayout',
-    description: 'Use this tool to render a layout for the user. This is used when you get components back from tool calls. You may render a snippet of JSX that can include custom components that you receive from tool calls. Dont forget to mention which ids were used.',
-    inputSchema: {
-        type: 'object' as const,
-        properties: {
-            layout: {
-                type: 'string'
-            },
-            includedIds: {
-                type: 'array',
-                items: { type: 'string' }
-            }
-        },
-        required: ['layout', 'includedIds']
-    }
-};
-
-
 
 export class FractalSDK extends Client {
 
@@ -208,47 +210,8 @@ export class FractalSDK extends Client {
         return this.fractalTransport?.sessionId;
     }
 
-    // ––– MCP convenience wrappers ––––––––––––––––––––––––––––––––––––––
-
-    override async listTools(params?: ListToolsRequest['params'], options?: RequestOptions): Promise<ListToolsResult> {
-        const result = await super.listTools(params, options);
-        
-        // Add the renderLayout tool to the response
-        const renderLayoutTool = {
-            name: 'renderLayout',
-            description: 'Use this tool to render a layout for the user. This is used when you get components back from tool calls. You may render a snippet of JSX that can include custom components that you receive from tool calls. Dont forget to mention which ids were used.',
-            inputSchema: {
-                type: 'object' as const,
-                properties: {
-                    layout: {
-                        type: 'string'
-                    },
-                    includedIds: {
-                        type: 'array',
-                        items: { type: 'string' }
-                    }
-                },
-                required: ['layout', 'includedIds']
-            }
-        };
-
-        // Add the renderLayout tool to the existing tools
-        if (result && typeof result === 'object' && 'tools' in result && Array.isArray(result.tools)) {
-            result.tools.push(renderLayoutTool);
-        } else {
-            // If no tools exist, create the structure
-            return {
-                ...result,
-                tools: [renderLayoutTool]
-            };
-        }
-
-        return result;
-    }
-
     /**
      * Little hack to call tools without the component cache.
-     * Does not support renderLayout
      * @param params 
      * @param resultSchema 
      * @param options 
@@ -268,28 +231,6 @@ export class FractalSDK extends Client {
      */
     override async callTool(params: CallToolRequest['params'], resultSchema?: any, options?: RequestOptions) {
         try {
-            // Handle renderLayout tool locally
-            if (params.name === 'renderLayout') {
-                const args = params.arguments as {layout: string, includedIds: string[]}
-                
-                // Extract component tool outputs for the included IDs
-                const componentToolOutputs: Record<string, ComponentToolOutput> = {};
-                if (args.includedIds) {
-                    for (const id of args.includedIds) {
-                        const output = this.componentToolOutputs.get(id);
-                        if (output) {
-                            componentToolOutputs[id] = output;
-                        }
-                    }
-                }
-                
-                return {
-                    data: {
-                        ...args,
-                        componentToolOutputs
-                    }
-                } as any;
-            }
 
             const res = await super.callTool(params, resultSchema, options).then(res => MCPToolOutputSchema.parse(res));
 
@@ -301,17 +242,27 @@ export class FractalSDK extends Client {
                 } catch (e) {
                     console.error('Error parsing tool output', e);
                 }
+
+                const id = crypto.randomUUID();
     
+                if (FractalErrorSchema.safeParse(content).success) {
+                    return {
+                        id,
+                        error: content
+                    }
+                }
                 const toolResponse = ComponentToolOutputSchema.parse(content);
 
+                // NOTE: As we move to align with the MCP UI spec, the id, toolname, args, and possibly other fields will need to move into _metadata
                 if (toolResponse.data != null && toolResponse.component != null) {
-                    const id = crypto.randomUUID();
-                    this.componentToolOutputs.set(id, {
+                    
+                    return {
+                        id: id,
                         component: toolResponse.component,
                         data: toolResponse.data,
-                        toolName,
-                    });
-                    return { id, jsx: `<Frac id={'${id}'}/>` } as any;
+                        toolName: toolName,
+                        toolArguments: params?.arguments as {fractalToolId: string, params: Record<string, any>},    
+                    }
                 }
             }
             return res;
@@ -346,15 +297,8 @@ export class FractalSDK extends Client {
     }
 
     /** Execute a tool with the given name and arguments */
-    async navigate(toolName: string, args: Record<string, any> = {}): Promise<RenderOutput> {
-        const res = await this.executeTool(toolName, args)
-        const parsedRes = ComponentToolOpaqueOutputSchema.parse(res)
-        const componentToolOutput = this.componentToolOutputs.get(parsedRes.id)
-        if (!componentToolOutput) throw new Error("Could not find component data for tool.")
-        return {
-            layout: parsedRes.jsx,
-            includedIds: [parsedRes.id],
-            componentToolOutputs: {[parsedRes.id]: componentToolOutput}
-        }
+    async navigate(toolName: string, args: Record<string, any> = {}): Promise<ComponentToolOutput> {
+        return await this.executeTool(toolName, args)
+
     }
 }
