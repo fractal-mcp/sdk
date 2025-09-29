@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/mcp-express",
-  "version": "2.1.0",
+  "version": "1.0.0",
   "description": "Express server utilities for MCP server hosting",
   "type": "module",
   "main": "./dist/index.js",

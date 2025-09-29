@@ -1,10 +1,10 @@
 {
-  "name": "anonymous-library",
+  "name": "fractal-mcp-sdk",
   "version": "1.0.0",
   "description": "A monorepo managed with Turborepo",
   "private": true,
   "workspaces": [
-    "apps/*",
+    "apps/**",
     "packages/*"
   ],
   "scripts": {
@@ -24,6 +24,7 @@
   },
   "packageManager": "npm@10.0.0",
   "dependencies": {
-    "commander": "^14.0.0"
+    "commander": "^14.0.0",
+    "vite-plugin-singlefile": "^2.3.0"
   }
 }

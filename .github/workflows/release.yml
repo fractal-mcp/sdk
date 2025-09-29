@@ -30,6 +30,8 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+          scope: '@fractal-mcp'
+          always-auth: true
 
       - name: Install dependencies
         run: npm install
@@ -38,14 +40,8 @@ jobs:
         run: |
           echo "=== Workspace packages ==="
           npm ls --depth=0 --workspaces
-          echo "=== Turbo cache info ==="
+          echo "=== Turbo version ==="
           npx turbo --version
-          echo "=== Check @fractal-mcp/mcp availability ==="
-          find . -name "@fractal" -type d | head -5
-          echo "=== Check if mcp package built ==="
-          ls -la packages/mcp/dist/ || echo "mcp not built yet"
-          echo "=== Check composer package ==="
-          ls -la packages/composer/dist/ || echo "composer not built yet"
 
       - name: Update package versions
         run: |
@@ -55,30 +51,35 @@ jobs:
           # Update all package versions using the Node.js script
           node scripts/update-versions.js "${{ inputs.version }}"
 
-      - name: Build dependencies first
+      - name: Build packages in order
         run: |
-          echo "=== Building core packages first ==="
-          npx turbo build --filter=@fractal-mcp/mcp --verbosity=2
+          echo "=== Building packages in specified order ==="
+          npx turbo build --filter=@fractal-mcp/protocol --verbosity=2
+          npx turbo build --filter=@fractal-mcp/shared-ui --verbosity=2
+          npx turbo build --filter=@fractal-mcp/client-ui-shared --verbosity=2
+          npx turbo build --filter=@fractal-mcp/client-ui-react --verbosity=2
+          npx turbo build --filter=@fractal-mcp/server-ui --verbosity=2
+          npx turbo build --filter=@fractal-mcp/server-ui-react --verbosity=2
           npx turbo build --filter=@fractal-mcp/mcp-express --verbosity=2
-          npx turbo build --filter=@fractal-mcp/composer --verbosity=2
-          echo "=== Core packages built ==="
+          npx turbo build --filter=@fractal-mcp/vercel-connector --verbosity=2
+          echo "=== Ordered build completed ==="
           
       - name: Type check
         run: |
           echo "=== Type checking ==="
           npx turbo run type-check || echo "Type check failed, but continuing..."
           
-      - name: Build all packages
+      - name: Post-build package check
         run: |
-          echo "=== Building with Turbo ==="
-          npx turbo build --verbosity=2
-          echo "=== Build completed ==="
-          echo "=== Post-build package check ==="
-          ls -la packages/mcp/dist/ || echo "mcp dist not found"
+          echo "=== Checking build outputs ==="
+          ls -la packages/protocol/dist/ || echo "protocol dist not found"
+          ls -la packages/shared-ui/dist/ || echo "shared-ui dist not found"
+          ls -la packages/client-ui-shared/dist/ || echo "client-ui-shared dist not found"
+          ls -la packages/client-ui-react/dist/ || echo "client-ui-react dist not found"
+          ls -la packages/server-ui/dist/ || echo "server-ui dist not found"
+          ls -la packages/server-ui-react/dist/ || echo "server-ui-react dist not found"
           ls -la packages/mcp-express/dist/ || echo "mcp-express dist not found"
-          ls -la packages/composer/dist/ || echo "composer dist not found"
-          echo "=== Check provider-weather build ==="
-          ls -la apps/provider-weather/dist/ || echo "provider-weather dist not found"
+          ls -la packages/vercel-connector/dist/ || echo "vercel-connector dist not found"
 
       - name: Create Git tag
         run: |
@@ -93,34 +94,50 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # Verify npm authentication
+          set -euo pipefail
+
           echo "=== Verifying npm authentication ==="
           npm whoami
           echo "=== npm configuration ==="
           npm config get registry
-          echo "=== npm token (masked) ==="
-          npm config get //registry.npmjs.org/:_authToken | head -c 10
-          
-          # Get list of packages from packages directory only (apps are private)
-          packages=$(find packages -name "package.json" -not -path "*/node_modules/*" | sort)
-          
-          echo "=== Publishing packages ==="
+          npm ping
+
+          # Explicit ordered list of packages to publish
+          packages_in_order=(
+            "packages/protocol"
+            "packages/shared-ui"
+            "packages/client-ui-shared"
+            "packages/client-ui-react"
+            "packages/server-ui"
+            "packages/server-ui-react"
+            "packages/mcp-express"
+            "packages/vercel-connector"
+          )
+
+          VERSION="${{ inputs.version }}"
+          echo "=== Publishing packages in order (target version: $VERSION) ==="
           published_count=0
           failed_count=0
-          
-          for package in $packages; do
-            package_dir=$(dirname "$package")
-            package_name=$(grep '"name"' "$package" | sed 's/.*"name": "\([^"]*\)".*/\1/')
-            
+
+          for package_dir in "${packages_in_order[@]}"; do
+            package="$package_dir/package.json"
+            if [ ! -f "$package" ]; then
+              echo "❌ package.json not found in $package_dir"
+              failed_count=$((failed_count + 1))
+              continue
+            fi
+
+            package_name=$(grep -m1 '"name"' "$package" | sed 's/.*"name": "\([^"]*\)".*/\1/')
+
             # Check if package is marked as private
             if grep -q '"private":\s*true' "$package"; then
               echo "⚠️  Skipping $package_name - marked as private"
               continue
             fi
-            
+
             echo "📦 Publishing $package_name from $package_dir..."
             cd "$package_dir"
-            
+
             # Verify package is built (has dist directory)
             if [ ! -d "dist" ]; then
               echo "❌ $package_name has no dist directory - build may have failed"
@@ -128,27 +145,49 @@ jobs:
               cd - > /dev/null
               continue
             fi
-            
-            # Publish the package
+
+            # Skip if this exact version already exists on npm
+            if npm view "$package_name@$VERSION" version >/dev/null 2>&1; then
+              echo "ℹ️  $package_name@$VERSION already exists on npm, skipping publish"
+              cd - > /dev/null
+              continue
+            fi
+
+            # Publish the package (scoped -> public)
             if npm publish --access public; then
-              echo "✅ Successfully published $package_name"
-              published_count=$((published_count + 1))
+              # Verify availability with retries (npm propagation)
+              tries=0
+              max_tries=8
+              sleep_secs=3
+              until npm view "$package_name@$VERSION" version >/dev/null 2>&1; do
+                tries=$((tries + 1))
+                if [ $tries -ge $max_tries ]; then
+                  echo "❌ $package_name@$VERSION not visible on npm after verification attempts"
+                  failed_count=$((failed_count + 1))
+                  break
+                fi
+                echo "⏳ Waiting for $package_name@$VERSION to appear on npm (try $tries/$max_tries)..."
+                sleep $sleep_secs
+              done
+
+              if [ $tries -lt $max_tries ]; then
+                echo "✅ Verified $package_name@$VERSION published"
+                published_count=$((published_count + 1))
+              fi
             else
               echo "❌ Failed to publish $package_name"
-              echo "📋 Package info:"
-              npm publish --access public --dry-run
               failed_count=$((failed_count + 1))
             fi
-            
+
             cd - > /dev/null
           done
-          
+
           echo "=== Publishing Summary ==="
           echo "✅ Published: $published_count packages"
           echo "❌ Failed: $failed_count packages"
-          
+
           if [ $failed_count -gt 0 ]; then
-            echo "⚠️  Some packages failed to publish"
+            echo "⚠️  Some packages failed to publish or verify"
             exit 1
           fi
 
@@ -170,4 +209,4 @@ jobs:
             apps/*/dist/
             !packages/*/node_modules/
             !apps/*/node_modules/
-          retention-days: 30 
+          retention-days: 30
