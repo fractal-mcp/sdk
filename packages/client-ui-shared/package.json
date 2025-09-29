@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/client-ui-shared",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Implements client side of fractal messaging protocol",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -23,8 +23,8 @@
     "src"
   ],
   "dependencies": {
-    "@fractal-mcp/protocol": "*",
-    "@fractal-mcp/shared-ui": "*"
+    "@fractal-mcp/protocol": "1.0.3",
+    "@fractal-mcp/shared-ui": "1.0.3"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -32,5 +32,3 @@
     "typescript": "^5.0.0"
   }
 }
-
-
