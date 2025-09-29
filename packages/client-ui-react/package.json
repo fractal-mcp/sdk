@@ -1,7 +1,7 @@
 {
-    "name": "@fractal-mcp/shared-ui",
+    "name": "@fractal-mcp/client-ui-react",
     "version": "1.0.0",
-    "description": "Shared UI utils",
+    "description": "Components for managing and communicating with iframed guest components",
     "type": "module",
     "types": "./dist/index.d.ts",
     "sideEffects": false,
@@ -16,21 +16,24 @@
       "dev": "tsc --watch",
       "clean": "rm -rf dist",
       "lint": "eslint src --ext .ts,.tsx",
-      "test": "jest --config ./jest.config.cjs"
+      "test": "echo 'no tests'"
     },
     "files": [
       "dist",
-      "src",
-      "tests"
+      "src"
     ],
     "dependencies": {
-      "@fractal-mcp/protocol": "*"
+      "@fractal-mcp/client-ui-shared": "*"
+    },
+    "peerDependencies": {
+      "react": ">=17 || >=18"
     },
     "devDependencies": {
-      "@types/node": "^20.0.0",
+      "@types/react": "^18.0.0",
       "eslint": "^8.0.0",
       "typescript": "^5.0.0"
     }
   }
+  
   
   
