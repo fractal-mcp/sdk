@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect, onMounted } from 'vue';
-import { initServerUIMessenger } from '@fractal-mcp/server-ui';
+import { initUIMessenger } from '@fractal-mcp/server-ui';
 
 const data = ref<Record<string, unknown> | null>(null);
 
 onMounted(async () => {
-  const client = await initServerUIMessenger();
+  const client = await initUIMessenger();
   data.value = client.getRenderData();
 });
 

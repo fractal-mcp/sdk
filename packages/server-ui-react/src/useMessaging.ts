@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { ServerUIMessenger, initServerUIMessenger, getServerUIMessenger, RegisteredTool } from '@fractal-mcp/server-ui';
+import { UIMessenger, initUIMessenger, RegisteredTool } from '@fractal-mcp/server-ui';
 
-export type UseFractalResult = {
+export type UseUIMessengerResult = {
   data?: Record<string, unknown>
   ready: boolean;
   link: (url: string) => Promise<unknown>;
@@ -12,19 +12,19 @@ export type UseFractalResult = {
   registerTool: (tool: RegisteredTool) => Promise<void>;
 };
 
-export function useFractal(): UseFractalResult {
-  const [messaging, setMessaging] = useState<ServerUIMessenger | null>(null);
+export function useUIMessenger(): UseUIMessengerResult {
+  const [messaging, setMessaging] = useState<UIMessenger | null>(null);
   const [ready, setReady] = useState<boolean>(false);
 
-  const clientPromiseRef = useRef<Promise<ServerUIMessenger> | null>(null);
-  const clientRef = useRef<ServerUIMessenger | null>(null);
+  const clientPromiseRef = useRef<Promise<UIMessenger> | null>(null);
+  const clientRef = useRef<UIMessenger | null>(null);
   
   useEffect(() => {
     let cancelled = false;
 
     if (!messaging && !clientPromiseRef.current) {
-      clientPromiseRef.current = initServerUIMessenger()
-        .then((client: ServerUIMessenger) => {
+      clientPromiseRef.current = initUIMessenger()
+        .then((client: UIMessenger) => {
           if (cancelled) return client;
           clientRef.current = client;
           setMessaging(client);
@@ -48,11 +48,11 @@ export function useFractal(): UseFractalResult {
   }, []);
 
   // Helper function to get the client promise
-  const getClientPromise = (): Promise<ServerUIMessenger> => {
+  const getClientPromise = (): Promise<UIMessenger> => {
     if (clientRef.current) {
       return Promise.resolve(clientRef.current);
     }
-    return clientPromiseRef.current || initServerUIMessenger();
+    return clientPromiseRef.current || initUIMessenger();
   };
 
   return {
@@ -84,3 +84,5 @@ export function useFractal(): UseFractalResult {
     data: clientRef.current?.getRenderData() || undefined
   };
 }
+
+export const useFractal = useUIMessenger;

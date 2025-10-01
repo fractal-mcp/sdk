@@ -1,3 +1,3 @@
 export * from './useMessaging';
-import { initServerUIMessenger } from '@fractal-mcp/server-ui';
-export { initServerUIMessenger };
+import { initUIMessenger } from '@fractal-mcp/server-ui';
+export { initUIMessenger };

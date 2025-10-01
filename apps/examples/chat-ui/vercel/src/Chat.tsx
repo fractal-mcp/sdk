@@ -2,7 +2,7 @@ import { useChat } from '@ai-sdk/react';
 import { FractalUIResourceRenderer, isUIResource } from '@fractal-mcp/client-ui-react';
 import { UIActionMessage, UIResource } from '@fractal-mcp/protocol';
 import { useCallback, useEffect } from 'react';
-import { c } from 'vite/dist/node/types.d-aGj9QkWt';
+
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, append } = useChat({

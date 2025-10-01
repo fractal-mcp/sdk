@@ -1,7 +1,7 @@
 {
   "name": "@fractal-mcp/server-ui-react",
   "version": "1.0.0",
-  "description": "React hook exposing ServerUIMessenger",
+  "description": "React hook exposingrUIMessenger",
   "type": "module",
   "types": "./dist/index.d.ts",
   "sideEffects": false,

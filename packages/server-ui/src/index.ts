@@ -24,11 +24,11 @@ export type ListToolsResult = {
   }>;
 };
 
-export class ServerUIMessenger {
+export class UIMessenger {
   private readonly messaging: MessagingClient;
   private readonly tools = new Map<string, RegisteredTool>();
-  private static instance: ServerUIMessenger | null = null;
-  private static initPromise: Promise<ServerUIMessenger> | null = null;
+  private static instance: UIMessenger | null = null;
+  private static initPromise: Promise<UIMessenger> | null = null;
   private readonly renderData: Record<string, unknown> | null = null;
 
   constructor(messaging: MessagingClient, renderData: Record<string, unknown> | null) {
@@ -39,22 +39,22 @@ export class ServerUIMessenger {
     this.setupResizeObserver();
   }
 
-  static async init(): Promise<ServerUIMessenger> {
-    if (ServerUIMessenger.instance) return ServerUIMessenger.instance;
-    if (ServerUIMessenger.initPromise) return ServerUIMessenger.initPromise;
+  static async init(): Promise<UIMessenger> {
+    if (UIMessenger.instance) return UIMessenger.instance;
+    if (UIMessenger.initPromise) return UIMessenger.initPromise;
 
-    ServerUIMessenger.initPromise = (async () => {
+    UIMessenger.initPromise = (async () => {
       const {port, renderData} = await handshakeForMessagePort();
       const messaging = new MessagingClient({ port });
-      ServerUIMessenger.instance = new ServerUIMessenger(messaging, renderData);
-      return ServerUIMessenger.instance;
+      UIMessenger.instance = new UIMessenger(messaging, renderData);
+      return UIMessenger.instance;
     })();
 
-    return ServerUIMessenger.initPromise;
+    return UIMessenger.initPromise;
   }
 
-  static get(): ServerUIMessenger | null {
-    return ServerUIMessenger.instance;
+  static get(): UIMessenger | null {
+    return UIMessenger.instance;
   }
 
   getRenderData(): Record<string, unknown> | null {
@@ -172,12 +172,14 @@ export class ServerUIMessenger {
   
 }
 
-export async function initServerUIMessenger(): Promise<ServerUIMessenger> {
-  return ServerUIMessenger.init();
+export async function initUIMessenger(): Promise<UIMessenger> {
+  return UIMessenger.init();
 }
   
-export function getServerUIMessenger(): ServerUIMessenger | null {
-  return ServerUIMessenger.get();
+export function getUIMessenger(): UIMessenger | null {
+  return UIMessenger.get();
 }
 
-
+export const ServerUIMessenger = UIMessenger;
+export const initServerUIMessenger = initUIMessenger
+export const getServerUIMessenger = getUIMessenger
