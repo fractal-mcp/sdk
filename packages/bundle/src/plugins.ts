@@ -9,11 +9,7 @@ import { detectFramework } from './detection.js';
 export async function getVitePlugins(args: BundleOptions): Promise<Plugin[]> {
   const framework = await detectFramework(args.entrypoint);
   const plugins: (Plugin | Plugin[])[] = [];
-  
-  const singleFilePlugin = viteSingleFile();
-  if (singleFilePlugin) {
-    plugins.push(singleFilePlugin as Plugin);
-  }
+
   switch (framework) {
     case 'react': {
       const react = await import('@vitejs/plugin-react').then(m => m.default);
@@ -42,6 +38,12 @@ export async function getVitePlugins(args: BundleOptions): Promise<Plugin[]> {
       // No framework-specific plugin needed
       break;
   }
-  
+
+  // Important: single-file plugin must run LAST, after framework/Tailwind/PostCSS transforms
+  const singleFilePlugin = viteSingleFile();
+  if (singleFilePlugin) {
+    plugins.push(singleFilePlugin as Plugin);
+  }
+
   return plugins.flat();
 }

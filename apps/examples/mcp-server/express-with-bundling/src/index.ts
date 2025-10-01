@@ -11,27 +11,20 @@ async function startServer(port: number = 3000) {
   const app = express();
   const server = new McpServer({ name: 'bundling-server', version: '1.0.0' });
 
-  // Bundle the Hello component on server start
+  // Bundle the components on server start
   console.log('Bundling Hello component...');
-  const helloComponentPath = resolve(
-    process.cwd(),
-    '../../mcp-ui/hello-example-react/src/Hello.tsx'
-  );
-  const bundleOutputDir = resolve(process.cwd(), './bundled');
+  const uiBasePath = resolve(process.cwd(), '../../mcp-ui/hello-example-react/src');  
+  const helloBundleOutputDir = resolve(process.cwd(), './bundled/Hello');
+  const goodbyeBundleOutputDir = resolve(process.cwd(), './bundled/Goodbye');
 
-  try {
-    await bundleReactComponent({
-      entrypoint: helloComponentPath,
-      out: bundleOutputDir
-    });
-    console.log('✓ Hello component bundled successfully');
-  } catch (error) {
-    console.error('Failed to bundle Hello component:', error);
-    process.exit(1);
-  }
-
-  // Read the bundled HTML file
-  const bundledHtmlPath = join(bundleOutputDir, 'index.html');
+  await bundleReactComponent({
+    entrypoint: resolve(uiBasePath, 'Hello.tsx'),
+    out: helloBundleOutputDir
+  })
+  await bundleReactComponent({
+    entrypoint: resolve(uiBasePath, 'Goodbye.tsx'),
+    out: goodbyeBundleOutputDir
+  })
 
   server.registerTool('hello', {
     title: 'Hello',
@@ -41,7 +34,7 @@ async function startServer(port: number = 3000) {
     },
   }, async ({ name }: { name: string }) => {
     // Read the bundled HTML
-    const htmlString = await readFile(bundledHtmlPath, 'utf-8');
+    const htmlString = await readFile(resolve(helloBundleOutputDir, 'index.html'), 'utf-8');
 
     // Create UI resource using rawHtml type
     const uiResource = createUIResource({
@@ -66,7 +59,7 @@ async function startServer(port: number = 3000) {
     },
   }, async ({ name }: { name: string }) => {
     // For goodbye, we'll also use the same bundled component
-    const htmlString = await readFile(bundledHtmlPath, 'utf-8');
+    const htmlString = await readFile(resolve(goodbyeBundleOutputDir, 'index.html'), 'utf-8');
 
     const uiResource = createUIResource({
       uri: 'ui://goodbye',

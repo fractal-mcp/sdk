@@ -1,15 +1,16 @@
 import { build } from 'vite';
 import { resolve, dirname, extname, join, basename, relative } from 'path';
-import { mkdir, writeFile, rm, access } from 'fs/promises';
+import { mkdir, writeFile, rm, access, readdir, rename } from 'fs/promises';
 import type { BundleOptions } from './types.js';
 import { getVitePlugins } from './plugins.js';
 
 /**
- * Bundles an HTML file into a single self-contained HTML file
+ * Internal function to bundle with a custom root directory
  */
-export async function bundle(args: BundleOptions): Promise<void> {
+async function bundleWithRoot(args: BundleOptions & { root?: string }): Promise<void> {
   const resolvedEntrypoint = resolve(args.entrypoint);
   const resolvedOut = resolve(args.out);
+  const root = args.root ? resolve(args.root) : dirname(resolvedEntrypoint);
   
   if (extname(resolvedEntrypoint) !== '.html') {
     throw new Error(`bundle() entrypoint must be a .html file, got: ${args.entrypoint}`);
@@ -19,21 +20,49 @@ export async function bundle(args: BundleOptions): Promise<void> {
   await mkdir(dirname(resolvedOut), { recursive: true });
   
   try {
-    await build({
-      root: dirname(resolvedEntrypoint),
-      plugins: vitePlugins,
-      build: {
-        outDir: resolvedOut,
-        emptyOutDir: true,
-        rollupOptions: {
-          input: resolvedEntrypoint,
-          external: [] // Don't externalize anything
+    // Temporarily change cwd to root so Vite/PostCSS resolve correctly
+    const originalCwd = process.cwd();
+    try {
+      process.chdir(root);
+      
+      await build({
+        root,
+        // Don't use vite.config - provide all config inline
+        configFile: false,
+        plugins: vitePlugins,
+        build: {
+          outDir: resolvedOut,
+          emptyOutDir: true,
+          rollupOptions: {
+            input: resolvedEntrypoint,
+            external: [], // Don't externalize anything
+            output: {
+              entryFileNames: 'index.js',
+              assetFileNames: '[name].[ext]'
+            }
+          }
         }
-      }
-    });
+      });
+    } finally {
+      process.chdir(originalCwd);
+    }
+    
+    // Rename the output HTML to index.html
+    const outputFiles = await readdir(resolvedOut);
+    const htmlFile = outputFiles.find(f => f.endsWith('.html'));
+    if (htmlFile && htmlFile !== 'index.html') {
+      await rename(join(resolvedOut, htmlFile), join(resolvedOut, 'index.html'));
+    }
   } catch (error) {
     throw new Error(`Failed to bundle ${args.entrypoint}: ${error instanceof Error ? error.message : String(error)}`);
   }
+}
+
+/**
+ * Bundles an HTML file into a single self-contained HTML file
+ */
+export async function bundle(args: BundleOptions): Promise<void> {
+  await bundleWithRoot(args);
 }
 
 /**
@@ -47,7 +76,7 @@ export async function bundleReactComponent(args: BundleOptions): Promise<void> {
     throw new Error(`bundleReactComponent() entrypoint must be a .tsx file, got: ${args.entrypoint}`);
   }
   
-  // Find the directory with package.json (where node_modules would be)
+  // Find the directory with package.json (where node_modules and configs would be)
   let packageDir = dirname(resolvedEntrypoint);
   while (packageDir !== dirname(packageDir)) {
     try {
@@ -58,13 +87,16 @@ export async function bundleReactComponent(args: BundleOptions): Promise<void> {
     }
   }
   
-  const tempDir = join(packageDir, `.fractal-bundle-temp-${Date.now()}`);
-  await mkdir(tempDir, { recursive: true });
+  // Create temp files directly in package dir with unique names to avoid conflicts
+  const tempId = Date.now();
+  const tempMainPath = join(packageDir, `.fractal-bundle-main-${tempId}.tsx`);
+  const tempHtmlPath = join(packageDir, `.fractal-bundle-index-${tempId}.html`);
   
   try {
     const componentName = basename(resolvedEntrypoint, '.tsx');
-    // Calculate relative path from temp dir to component
-    let relativeComponentPath = relative(tempDir, resolvedEntrypoint);
+    
+    // Calculate relative path from package dir to component
+    let relativeComponentPath = relative(packageDir, resolvedEntrypoint);
     // Ensure it starts with ./ for ES modules
     if (!relativeComponentPath.startsWith('.')) {
       relativeComponentPath = './' + relativeComponentPath;
@@ -81,8 +113,7 @@ const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(React.createElement(${componentName}));
 `;
     
-    const mainTsxPath = join(tempDir, 'main.tsx');
-    await writeFile(mainTsxPath, mainTsxContent);
+    await writeFile(tempMainPath, mainTsxContent);
     
     const indexHtmlContent = `
 <!DOCTYPE html>
@@ -94,24 +125,27 @@ root.render(React.createElement(${componentName}));
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/main.tsx"></script>
+    <script type="module" src="/${basename(tempMainPath)}"></script>
   </body>
 </html>
 `;
     
-    const indexHtmlPath = join(tempDir, 'index.html');
-    await writeFile(indexHtmlPath, indexHtmlContent);
+    await writeFile(tempHtmlPath, indexHtmlContent);
     
-    await bundle({
-      entrypoint: indexHtmlPath,
-      out: args.out
+    // Bundle with package dir as root so all configs are found
+    await bundleWithRoot({
+      entrypoint: tempHtmlPath,
+      out: args.out,
+      root: packageDir
     });
     
   } finally {
+    // Clean up temp files
     try {
-      await rm(tempDir, { recursive: true, force: true });
+      await rm(tempMainPath, { force: true });
+      await rm(tempHtmlPath, { force: true });
     } catch (error) {
-      console.warn(`Failed to clean up temporary directory ${tempDir}:`, error);
+      console.warn(`Failed to clean up temporary files:`, error);
     }
   }
 }

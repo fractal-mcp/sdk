@@ -1,4 +1,5 @@
 import { useFractal } from '@fractal-mcp/server-ui-react';
+import './index.css';
 
 export default function Hello() {
   const { data, link, tool } = useFractal();
