@@ -10,5 +10,3 @@ const bootstrap = async (Component: React.ComponentType) => {
 };
 
 bootstrap(Router);
-
-
