@@ -15,7 +15,7 @@ export default function Router() {
   if (path === '/goodbye') {
     return <Goodbye />;
   }
-
+  console.log('path', path);
   return <Hello />;
 }
 

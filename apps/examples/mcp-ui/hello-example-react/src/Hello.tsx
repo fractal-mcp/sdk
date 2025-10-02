@@ -1,4 +1,6 @@
 import { useUIMessenger } from '@fractal-mcp/server-ui-react';
+import './index.css';
+
 
 export default function Hello() {
   const { renderData, requestTool } = useUIMessenger();
