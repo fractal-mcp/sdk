@@ -20,7 +20,8 @@
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
     "ts-jest": "^29.4.0",
-    "turbo": "^2.5.4"
+    "turbo": "^2.5.4",
+    "@rollup/rollup-linux-x64-gnu": "4.52.0"
   },
   "packageManager": "npm@10.0.0",
   "dependencies": {

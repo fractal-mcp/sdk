@@ -19,7 +19,9 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: npm install --include=optional
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
 
       - name: Run tests
         run: npx turbo test
