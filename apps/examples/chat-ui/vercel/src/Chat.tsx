@@ -1,5 +1,5 @@
 import { useChat } from '@ai-sdk/react';
-import { FractalUIResourceRenderer, isUIResource } from '@fractal-mcp/client-ui-react';
+import { UIResourceRenderer, isUIResource } from '@mcp-ui/client';
 import { UIActionMessage, UIResource } from '@fractal-mcp/protocol';
 import { useCallback, useEffect } from 'react';
 
@@ -92,11 +92,13 @@ export default function Chat() {
                   const content = toolInvocation.result.content[0];
                   if (isUIResource(content)) {
                     const uiResource = content as UIResource;
-                    return <FractalUIResourceRenderer
+                    return <UIResourceRenderer
                       key={i}
                       resource={uiResource.resource} 
                       onUIAction={handleUIActionMessage}
-                      autoResizeIframe={true}
+                      htmlProps={{
+                        autoResizeIframe: true
+                      }}
                     />
                   }
                 }

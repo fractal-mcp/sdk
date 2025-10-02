@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { FractalUIResourceRenderer } from '@fractal-mcp/client-ui-react';
-import { getMessageRouter } from '@fractal-mcp/client-ui-shared';
+import { UIResourceRenderer, isUIResource } from '@mcp-ui/client';
 import { createUIResource } from '@mcp-ui/server';
 import { UIActionMessage } from '@fractal-mcp/protocol';
 
@@ -38,33 +37,10 @@ export default function App() {
     console.log(`called onUIAction: ${action.type}: ${JSON.stringify(action.payload)}`);
     return { success: true };
   }
-
-  const iframeRenderData = resource._meta && resource._meta["mcpui.dev/ui-initial-render-data"] as Record<string, unknown>
-
-  const handleQueryDom = async () => {
-    setLoading(true);
-    try {
-      const res = await getMessageRouter().request({
-        componentId: COMPONENT_ID,
-        type: 'queryDom',
-        payload: {}
-      });
-      setDomResult(typeof res === 'string' ? res : JSON.stringify(res, null, 2));
-    } catch (e: any) {
-      setDomResult(`Error: ${e?.message ?? String(e)}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="card">
-      <h1>FractalUIResourceRenderer example</h1>
-      <div style={{ margin: '12px 0', display: 'flex', gap: 8 }}>
-        <button onClick={handleQueryDom} disabled={loading}>
-          {loading ? 'Querying DOM…' : 'Query DOM'}
-        </button>
-      </div>
+      <h1>UIResourceRenderer example</h1>
+
       <div style={{ margin: '12px 0' }}>
         <label style={{ display: 'block', fontWeight: 600, marginBottom: 4 }}>queryDom result</label>
         <textarea
@@ -75,12 +51,12 @@ export default function App() {
           placeholder="Press “Query DOM” to fetch the current iframe HTML"
         />
       </div>
-      <FractalUIResourceRenderer
+      <UIResourceRenderer
         resource={resource.resource} 
         onUIAction={onUIAction} 
-        autoResizeIframe={true}
-        iframeRenderData={iframeRenderData}
-        componentId={COMPONENT_ID}
+        htmlProps={{
+          autoResizeIframe: true
+        }}
       />
     </div>
   );
