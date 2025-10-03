@@ -57,7 +57,8 @@ app.post('/api/chat', async (req, res) => {
   const { messages } = req.body;
   const processedMessages = messages as UIMessage[];
   const transport = new StreamableHTTPClientTransport(new URL("http://localhost:3000/"));
-
+  // const transport = new StreamableHTTPClientTransport(new URL("https://mcpstorefront.com/?store=demostore.mock.shop&mode=tool"));
+  
   const fractalVercel = new FractalVercel({
     callTool: async (toolName: string, args: Record<string, unknown>) => {
       const result = await callMcpToolDirect(transport, toolName, args);
@@ -78,6 +79,30 @@ app.post('/api/chat', async (req, res) => {
       maxSteps: 10,
       maxRetries: 3,
       tools: mcpTools,
+      // onStepFinish: (step) => {
+      //   console.log('=== Step Finished ===');
+      //   console.log('Step type:', step.stepType);
+        
+      //   if (step.toolCalls && step.toolCalls.length > 0) {
+      //     console.log('\n--- Tool Calls ---');
+      //     step.toolCalls.forEach((toolCall, index) => {
+      //       console.log(`\nTool Call ${index + 1}:`);
+      //       console.log('  Tool Name:', toolCall.toolName);
+      //       console.log('  Arguments:', JSON.stringify(toolCall.args, null, 2));
+      //     });
+      //   }
+        
+      //   if (step.toolResults && step.toolResults.length > 0) {
+      //     console.log('\n--- Tool Results ---');
+      //     step.toolResults.forEach((toolResult, index) => {
+      //       console.log(`\nTool Result ${index + 1}:`);
+      //       console.log('  Tool Name:', toolResult.toolName);
+      //       console.log('  Result:', JSON.stringify(toolResult.result, null, 2));
+      //     });
+      //   }
+        
+      //   console.log('===================\n');
+      // },
     })
     result.pipeDataStreamToResponse(res);
     }

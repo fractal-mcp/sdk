@@ -1,13 +1,15 @@
-import { useFractal } from '@fractal-mcp/server-ui-react';
+import { useUIMessenger } from '@fractal-mcp/server-ui-react';
 import './index.css';
 
 export default function Goodbye() {
-  const { data, link } = useFractal();
-  const name = (data && (data.name as string)) || 'Friend';
+  const { renderData, requestLink } = useUIMessenger();
+  const name = (renderData && (renderData.name as string)) || 'Friend';
 
   const onGoodbyeClick = async () => {
-    await link('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1');
-    console.log('link clicked');
+    const req = await requestLink({url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1'});
+    req.received().then(() => { console.log('received link click') })
+    req.response().then((res) => { console.log(`link clicked: ${res}`) })
+    
   };
 
   return (

@@ -29,7 +29,7 @@ export function useUIMessenger(): UseUIMessengerResult {
     let cancelled = false;
 
     if (!messaging && !clientPromiseRef.current) {
-      clientPromiseRef.current = initUIMessenger()
+      clientPromiseRef.current = initUIMessenger({ forceWaitForRenderData: true })
         .then((client: UIMessenger) => {
           if (cancelled) return client;
           clientRef.current = client;

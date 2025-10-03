@@ -46,17 +46,25 @@ export class UIMessenger {
 	 * Static async initialization method.
 	 * Checks for waitForRenderData query parameter and blocks until render data is received if needed.
 	 */
-	static async init(rootElId?: string): Promise<UIMessenger> {
+	static async init(args: { 
+		rootElId?: string, 
+		forceWaitForRenderData?: boolean
+	}): Promise<UIMessenger> {
+		const { rootElId = undefined, forceWaitForRenderData = false } = args;
+		console.log(`[UIMessenger] init`);
 		const urlParams = new URLSearchParams(window.location.search);
-		const shouldWaitForRenderData = urlParams.get("waitForRenderData") === "true";
+		const shouldWaitForRenderData = (urlParams.get("waitForRenderData") === "true") || forceWaitForRenderData;
 
 		let initialRenderData: RenderData | null = null;
 
 		if (shouldWaitForRenderData) {
+			console.log(`[UIMessenger] shouldWaitForRenderData: ${shouldWaitForRenderData}`);
 			// Set up listener before sending ready event
 			const renderDataPromise = new Promise<RenderData>((resolve) => {
 				const handler = (event: MessageEvent) => {
+					console.log(`[UIMessenger] handler: ${JSON.stringify(event.data)}`);
 					if (event.data?.type === "ui-lifecycle-iframe-render-data") {
+						console.log(`[UIMessenger] ui-lifecycle-iframe-render-data: ${JSON.stringify(event.data)}`);
 						window.removeEventListener("message", handler);
 						resolve(event.data.payload?.renderData ?? {});
 					}
@@ -69,11 +77,14 @@ export class UIMessenger {
 
 			// Wait for render data
 			initialRenderData = await renderDataPromise;
+		} else {
+			// Still send ready event so parent knows to send render data,
+			// but don't block waiting for it
+			window.parent.postMessage({ type: "ui-lifecycle-iframe-ready" }, "*");
 		}
 
-		// Create instance (skip auto-ready if we already sent it)
+		console.log(`[UIMessenger] initialRenderData: ${JSON.stringify(initialRenderData)}`);
 		const messenger = new UIMessenger(rootElId, {
-			skipAutoReady: shouldWaitForRenderData,
 			initialRenderData,
 		});
 
@@ -82,18 +93,13 @@ export class UIMessenger {
 
 	constructor(
 		rootElId?: string,
-		options?: { skipAutoReady?: boolean; initialRenderData?: RenderData | null }
+		options?: { initialRenderData?: RenderData | null }
 	) {
 		this._rpcClient = new RpcClient({ dstWindow: window.parent });
 
 		// Set initial render data if provided
 		if (options?.initialRenderData) {
 			this._renderData = options.initialRenderData;
-		}
-
-		// auto send ready event (unless skipped)
-		if (!options?.skipAutoReady) {
-			this._rpcClient.emit("ui-lifecycle-iframe-ready");
 		}
 
 		// setup resize observer (your pattern)
@@ -118,28 +124,42 @@ export class UIMessenger {
 
 	/** Sets up a resize observer on provided element (or #root or documentElement) */
 	private setupResizeObserver(rootElId?: string): () => void {
+	console.log(`[UIMessenger] setupResizeObserver: ${rootElId}`);
 
 		const el = rootElId 
-      ? (document.getElementById(rootElId) as HTMLElement | null) 
-      : document.documentElement;
+		? (document.getElementById(rootElId) as HTMLElement | null) 
+		: document.documentElement;
 
-    if (!el) {
-      throw new Error(`Root element with id ${rootElId} not found`);
-    }
+		if (!el) {
+		throw new Error(`Root element with id ${rootElId} not found`);
+		}
+		console.log(`[UIMessenger] el: ${el}`);
 
 		let lastWidth = 0;
 		let lastHeight = 0;
 
 		const emitSize = () => {
+			console.log(`[UIMessenger] emitSize ${lastWidth} ${lastHeight} -> ${el.clientWidth} ${el.clientHeight}`);
 			const width = el.clientWidth;
 			const height = el.clientHeight;
 			if (width !== lastWidth || height !== lastHeight) {
 				lastWidth = width;
 				lastHeight = height;
-				this._rpcClient.emit("ui-size-change", { width, height });
+				console.log(`[UIMessenger] ui-size-change: ${width} ${height}`);
+				// this._rpcClient.emit("ui-size-change", { width, height });
+				window.parent.postMessage(
+					{
+					  type: "ui-size-change",
+					  payload: {
+						height: el.clientHeight,
+						width: el.clientWidth,
+					  },
+					},
+					"*"
+				  );
 			}
 		};
-
+		console.log(`[UIMessenger] new ResizeObserver`);
 		const ro = new ResizeObserver(() => emitSize());
 		ro.observe(el);
 		emitSize();
@@ -284,6 +304,9 @@ export class UIMessenger {
 }
 
 
-export async function initUIMessenger(rootElId?: string): Promise<UIMessenger> {
-	return UIMessenger.init(rootElId);
+export async function initUIMessenger(args?: { 
+	rootElId?: string, 
+	forceWaitForRenderData?: boolean
+}): Promise<UIMessenger> {
+	return UIMessenger.init(args || {});
 }

@@ -1,5 +1,6 @@
 import { useChat } from '@ai-sdk/react';
-import { UIResourceRenderer, isUIResource } from '@mcp-ui/client';
+// import { UIResourceRenderer, isUIResource } from '@mcp-ui/client';
+import { UIResourceRenderer, isUIResource } from '@fractal-mcp/client-ui-react';
 import { UIActionMessage, UIResource } from '@fractal-mcp/protocol';
 import { useCallback, useEffect } from 'react';
 
@@ -11,7 +12,7 @@ export default function Chat() {
 
   // Forward UI action messages to the chat
   const handleUIActionMessage = useCallback(async (event: UIActionMessage) => {
-    console.log("handleUIActionMessage", event)
+    // console.log("handleUIActionMessage", event)
     switch (event.type) {
 
       // Sensible default: open link in new tab
@@ -22,6 +23,11 @@ export default function Chat() {
       // Sensible default: forward to agent backend
       case 'tool':
       case 'intent':
+        append({
+          role: 'data',
+          content: JSON.stringify(event),
+        })
+        break;
       case 'notify':
       case 'prompt':
         append({
@@ -89,18 +95,31 @@ export default function Chat() {
               if (part.type === 'tool-invocation') {
                 const toolInvocation = (part as any).toolInvocation;
                 if (toolInvocation.result != null && toolInvocation.result.content != null && toolInvocation.result.content.length && toolInvocation.result.content[0] != null) {
-                  const content = toolInvocation.result.content[0];
-                  if (isUIResource(content)) {
-                    const uiResource = content as UIResource;
-                    return <UIResourceRenderer
-                      key={i}
-                      resource={uiResource.resource} 
-                      onUIAction={handleUIActionMessage}
-                      htmlProps={{
-                        autoResizeIframe: true
-                      }}
-                    />
-                  }
+                  const contents = toolInvocation.result.content;
+                  return (
+                    <div key={i} className="inline-flex flex-row gap-3 mt-3 overflow-x-auto max-w-[90vw] -mx-4">
+                      {contents.map((content: any, contentIdx: number) => {
+                        if (isUIResource(content)) {
+                          const uiResource = content as UIResource;
+                          return (
+                            <div key={`${i}-${contentIdx}`} className="flex-shrink-0 max-w-[33vw]">
+                              <div style={{ display: 'inline-block' }}>
+                                <UIResourceRenderer
+                                  resource={uiResource.resource}
+                                  onUIAction={handleUIActionMessage}
+                                  htmlProps={{
+                                    autoResizeIframe: true,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        } else {
+                          return null;
+                        }
+                      })}
+                    </div>
+                  );
                 }
                 // Handle other tool calls
                 // return <div></div>
