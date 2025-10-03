@@ -1,12 +1,15 @@
-import { useFractal } from '@fractal-mcp/server-ui-react';
+import { useUIMessenger } from '@fractal-mcp/server-ui-react';
 import './index.css';
 
-export default function Hello() {
-  const { data, link, tool } = useFractal();
-  const name = (data && (data.name as string)) || 'World';
 
-  const handleGoodbyeClick = () => {
-    tool('goodbye', { name });
+export default function Hello() {
+  const { renderData, requestTool } = useUIMessenger();
+  const name = (renderData && (renderData.name as string)) || 'World';
+
+  const handleGoodbyeClick = async () => {
+    const req = await requestTool({toolName: 'goodbye', params: { name: name }})
+    req.received().then(() => { console.log('received') })
+    req.response().then((res) => { console.log(res) })
   };
 
   return (

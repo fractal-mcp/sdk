@@ -1,111 +1,107 @@
-import { MessageEnvelope, GenericMessageData } from '@fractal-mcp/protocol';
+export type Message = {
+    type: string;
+    messageId?: string;
+    payload?: Record<string, unknown>;
+};
 
-const LOG_ENABLE = false;
-function log(...args: unknown[]) {
-  if (LOG_ENABLE) {
-    console.log(`[Fractal UI Shared]`, ...args);
-  }
-}
+type RpcClientOptions = {
+    dstWindow: Window;
+    targetOrigin?: string; // default "*"
+};
 
-export interface IMessagingClient {
-  request(msg: GenericMessageData): Promise<unknown>;
-  emit(msg: GenericMessageData): void;
-  on(messageType: string, handler: (payload: unknown) => Promise<unknown> | void): void;
-}
+export class RpcRequest extends EventTarget {
+    private id: string;
+    private receivedPromise: Promise<void>;
+    private receivedResolve!: () => void;
+    private responsePromise: Promise<Record<string, unknown>>;
+    private responseResolve!: (value: any) => void;
+    private responseReject!: (err: any) => void;
 
-  export class MessagingClient implements IMessagingClient {
-      private port: MessagePort;
-      private handlers: Map<string, (event: unknown) => Promise<unknown> | void> = new Map();
-      private pendingRequests: Map<string, {resolve: (value: unknown) => void, reject: (error: Error) => void, timeout?: NodeJS.Timeout}> = new Map();
-      
-      constructor(args: {
-          port: MessagePort,
-      }) {
-        this.port = args.port;
-        this.setupListeners();
-      }
-  
-      postMessage(msg: MessageEnvelope<GenericMessageData>) {
-        this.port.postMessage(msg);
-      }
+    constructor(id: string) {
+        super();
+        this.id = id;
 
-      setupListeners() {
-          this.port.onmessage = async ({ data }) => {
-              const msg = data as MessageEnvelope<GenericMessageData> || {}
-              if (msg.kind === 'request') {
-                  const handler = this.handlers.get(msg.type);
-                  if (handler) {
-                      try {
-                          const resp = await handler(msg.payload);
-                          this.postMessage({ id: msg.id, kind: 'success', type: "", payload: resp });
-                      } catch (error) {
-                          const err = error as Error;
-                          this.postMessage({ id: msg.id, kind: 'error', error: err.message });
-                      }
-                  } else {
-                      console.error('[messaging] Command not found', msg.type);
-                      this.postMessage({ id: msg.id, kind: 'error', error: 'Command not found' });
-                  }
-              } else if (msg.kind == "event") {
-                  const handler = this.handlers.get(msg.type);
-                  if (handler) {
-                      handler(msg.payload);
-                  } else {
-                      console.warn('[messaging] Event not handled', msg.type);
-                  }
-              } else if (msg.kind == "success") {
-                const pending = this.pendingRequests.get(msg.id);
-                if (pending) {
-                  if (pending.timeout) clearTimeout(pending.timeout);
-                  this.pendingRequests.delete(msg.id);
-                  pending.resolve(msg.payload);
-                }
-              } else if (msg.kind == "error") {
-                const pending = this.pendingRequests.get(msg.id);
-                if (pending) {
-                  if (pending.timeout) clearTimeout(pending.timeout);
-                  this.pendingRequests.delete(msg.id);
-                  pending.reject(new Error(msg.error));
-                }
-              }
-          };
-      }
-  
-      // Sends a request and expects a response back
-      request(msg: GenericMessageData): Promise<unknown> {
-          const { type: messageType, payload } = msg;
-          const id = crypto.randomUUID();
-          this.postMessage({
-            kind: 'request', 
-            id,
-            type: messageType,
-            payload,
-          });
-          return new Promise((resolve, reject) => {
-              this.pendingRequests.set(id, { resolve, reject });
-          }).then((res) => {
-            log('request() resolved', res);
-            return res;
-          }).catch((err) => {
-            log('request() rejected', err);
-            throw err;
-          });
-      }
-  
-      // Sends an event to the consumer, does not expect a response back
-      emit(msg: GenericMessageData): void {
-        const { type: messageType, payload } = msg;
-        this.postMessage({ 
-          kind: 'event', 
-          id: crypto.randomUUID(), 
-          type: messageType,
-          payload,
+        this.receivedPromise = new Promise((resolve) => {
+            this.receivedResolve = resolve;
         });
-      }
-  
-      on(messageType: string, handler: (payload: unknown) => Promise<unknown> | void): void {
-        log('called on()', messageType);
-        this.handlers.set(messageType, handler);
-      }
-  
-  }
+
+        this.responsePromise = new Promise((resolve, reject) => {
+            this.responseResolve = resolve;
+            this.responseReject = reject;
+        });
+    }
+
+    get messageId() {
+        return this.id;
+    }
+
+    /** wait until host acknowledged request */
+    async received(): Promise<void> {
+        return this.receivedPromise;
+    }
+
+    /** wait until host responded, returns payload or throws */
+    async response(): Promise<Record<string, unknown>> {
+        return this.responsePromise;
+    }
+
+    _onReceived() {
+        this.dispatchEvent(new CustomEvent("ui-message-received"));
+        this.receivedResolve();
+    }
+
+    _onResponse(payload: { response?: Record<string, unknown>; error?: unknown }) {
+        if (payload.error) {
+            this.dispatchEvent(new CustomEvent("ui-message-response", { detail: { error: payload.error } }));
+            this.responseReject(new Error(String(payload.error)));
+        } else {
+            this.dispatchEvent(new CustomEvent("ui-message-response", { detail: { response: payload.response } }));
+            this.responseResolve(payload.response);
+        }
+    }
+}
+
+export class RpcClient {
+    private dstWindow: Window;
+    private targetOrigin: string;
+    private correlationMap: Map<string, RpcRequest>;
+
+    constructor(opts: RpcClientOptions) {
+        this.dstWindow = opts.dstWindow;
+        this.targetOrigin = opts.targetOrigin ?? "*";
+        this.correlationMap = new Map();
+
+        window.addEventListener("message", (event) => {
+            const msg: Message = event.data;
+            if (!msg?.type || !msg.messageId) return;
+
+            const req = this.correlationMap.get(msg.messageId);
+            if (!req) return;
+
+            if (msg.type === "ui-message-received") {
+                req._onReceived();
+            } else if (msg.type === "ui-message-response") {
+                req._onResponse(msg.payload ?? {});
+                this.correlationMap.delete(msg.messageId);
+            }
+        });
+    }
+
+    /** send fire-and-forget message */
+    emit(type: string, payload: Record<string, unknown> = {}): void {
+        const msg: Message = { type, payload };
+        this.dstWindow.postMessage(msg, this.targetOrigin);
+    }
+
+    /** send a request with messageId and return a Request object */
+    request(type: string, payload: Record<string, unknown> = {}): RpcRequest {
+        const messageId = crypto.randomUUID();
+        const req = new RpcRequest(messageId);
+        this.correlationMap.set(messageId, req);
+
+        const msg: Message = { type, messageId, payload };
+        this.dstWindow.postMessage(msg, this.targetOrigin);
+
+        return req;
+    }
+}

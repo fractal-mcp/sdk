@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useFractal } from '@fractal-mcp/server-ui-react';
+import { useUIMessenger } from '@fractal-mcp/server-ui-react';
 
 export default function App() {
   const [defaultValue, setDefaultValue] = useState(0);
   const [count, setCount] = useState(0);
-  const {data} = useFractal();
-  // const {data} = useFractal();
-  const initialCount = (data && data.count) ? data.count as number : 0
+  const {renderData} = useUIMessenger();
+
+  const initialCount = (renderData && renderData.count) ? renderData.count as number : 0
 
   useEffect(() => {
     setCount(initialCount)
     setDefaultValue(initialCount)
   }, [initialCount])
 
-  if (!data) {
+  if (!renderData) {
     return <div></div>
   }
   
@@ -27,7 +27,7 @@ export default function App() {
       fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
       border: '1px solid #e5e7eb'
     }}>
-      <div> {JSON.stringify(data)} </div>
+      <div> {JSON.stringify(renderData)} </div>
       <div style={{
         textAlign: 'center',
         marginBottom: '20px'

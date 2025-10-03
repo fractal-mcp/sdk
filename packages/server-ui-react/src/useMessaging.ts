@@ -1,15 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
-import { UIMessenger, initUIMessenger, RegisteredTool } from '@fractal-mcp/server-ui';
+import { IntentPayload, LinkPayload, NotifyPayload, PromptPayload, RequestDataPayload, ToolPayload, UIMessenger, initUIMessenger } from '@fractal-mcp/server-ui';
+import { RpcRequest } from '@fractal-mcp/shared-ui';
 
 export type UseUIMessengerResult = {
-  data?: Record<string, unknown>
+  renderData?: Record<string, unknown>
   ready: boolean;
-  link: (url: string) => Promise<unknown>;
-  intent: (intent: string, params?: Record<string, unknown>) => Promise<void>;
-  notify: (message: string) => Promise<void>;
-  prompt: (prompt: string) => Promise<void>;
-  tool: (toolName: string, params: Record<string, unknown>) => Promise<void>;
-  registerTool: (tool: RegisteredTool) => Promise<void>;
+  requestLink: (args: LinkPayload) => Promise<RpcRequest>;
+  requestIntent: (args: IntentPayload) => Promise<RpcRequest>;
+  requestNotify: (args: NotifyPayload) => Promise<RpcRequest>;
+  requestPrompt: (args: PromptPayload) => Promise<RpcRequest>;
+  requestTool: (args: ToolPayload) => Promise<RpcRequest>;
+  requestData: (args: RequestDataPayload) => Promise<RpcRequest>;
+  emitLink: (args: LinkPayload) => void;
+  emitIntent: (args: IntentPayload) => void;
+  emitNotify: (args: NotifyPayload) => void;
+  emitPrompt: (args: PromptPayload) => void;
+  emitTool: (args: ToolPayload) => void;
 };
 
 export function useUIMessenger(): UseUIMessengerResult {
@@ -23,7 +29,7 @@ export function useUIMessenger(): UseUIMessengerResult {
     let cancelled = false;
 
     if (!messaging && !clientPromiseRef.current) {
-      clientPromiseRef.current = initUIMessenger()
+      clientPromiseRef.current = initUIMessenger({ forceWaitForRenderData: true })
         .then((client: UIMessenger) => {
           if (cancelled) return client;
           clientRef.current = client;
@@ -56,32 +62,52 @@ export function useUIMessenger(): UseUIMessengerResult {
   };
 
   return {
-    link: async (url: string) => {
+    requestLink: async (args: LinkPayload): Promise<RpcRequest> => {
       const client = await getClientPromise();
-      return await client.link(url);
+      return await client.requestLink(args);
     },
-    intent: async (intent: string, params?: Record<string, unknown>) => {
+    requestIntent: async (args: IntentPayload): Promise<RpcRequest> => {
       const client = await getClientPromise();
-      return client.intent(intent, params);
+      return client.requestIntent(args);
     },
-    notify: async (message: string) => {
+    requestNotify: async (args: NotifyPayload): Promise<RpcRequest> => {
       const client = await getClientPromise();
-      return client.notify(message);
+      return client.requestNotify(args);
     },
-    prompt: async (prompt: string) => {
+    requestPrompt: async (args: PromptPayload): Promise<RpcRequest> => {
       const client = await getClientPromise();
-      return client.prompt(prompt);
+      return client.requestPrompt(args);
     },
-    tool: async (toolName: string, params: Record<string, unknown>) => {
+    requestTool: async (args: ToolPayload): Promise<RpcRequest> => {
       const client = await getClientPromise();
-      return client.tool(toolName, params);
+      return client.requestTool(args);
     },
-    registerTool: async (tool: RegisteredTool) => {
+    requestData: async (args: RequestDataPayload): Promise<RpcRequest> => {
       const client = await getClientPromise();
-      client.registerTool(tool);
+      return client.requestData(args);
+    },
+    emitLink: async (args: LinkPayload) => {
+      const client = await getClientPromise();
+      client.emitLink(args);
+    },
+    emitIntent: async (args: IntentPayload) => {
+      const client = await getClientPromise();
+      client.emitIntent(args);
+    },
+    emitNotify: async (args: NotifyPayload) => {
+      const client = await getClientPromise();
+      client.emitNotify(args);
+    },
+    emitPrompt: async (args: PromptPayload) => {
+      const client = await getClientPromise();
+      client.emitPrompt(args);
+    },
+    emitTool: async (args: ToolPayload) => {
+      const client = await getClientPromise();
+      client.emitTool(args);
     },
     ready, 
-    data: clientRef.current?.getRenderData() || undefined
+    renderData: clientRef.current?.getRenderData() || undefined
   };
 }
 
