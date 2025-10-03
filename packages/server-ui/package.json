@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/server-ui",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "Messenger implementing server (iframe) side of fractal messaging protocol",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -23,8 +23,8 @@
     "src"
   ],
   "dependencies": {
-    "@fractal-mcp/protocol": "*",
-    "@fractal-mcp/shared-ui": "*"
+    "@fractal-mcp/protocol": "1.1.1",
+    "@fractal-mcp/shared-ui": "1.1.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -32,5 +32,3 @@
     "typescript": "^5.0.0"
   }
 }
-
-
