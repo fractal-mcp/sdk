@@ -9,7 +9,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@fractal-mcp/client-ui-react": ["../../packages/client-ui-react/dist"]
     }
   },
   "include": ["src"]

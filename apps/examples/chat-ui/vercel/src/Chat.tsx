@@ -1,6 +1,5 @@
 import { useChat } from '@ai-sdk/react';
-// import { UIResourceRenderer, isUIResource } from '@mcp-ui/client';
-import { UIResourceRenderer, isUIResource } from '@fractal-mcp/client-ui-react';
+import { UIResourceRenderer, isUIResource } from '@mcp-ui/client';
 import { UIActionMessage, UIResource } from '@fractal-mcp/protocol';
 import { useCallback, useEffect } from 'react';
 

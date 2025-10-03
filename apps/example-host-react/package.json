@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fractal-mcp/client-ui-react": "^1.0.0",
     "@mcp-ui/server": "^5.11.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
