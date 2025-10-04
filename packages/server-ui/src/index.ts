@@ -84,7 +84,7 @@ export class UIMessenger {
 		}
 
 		console.log(`[UIMessenger] initialRenderData: ${JSON.stringify(initialRenderData)}`);
-		const messenger = new UIMessenger(rootElId, {
+		const messenger = new UIMessenger(rootElId || "root", {
 			initialRenderData,
 		});
 
@@ -95,6 +95,7 @@ export class UIMessenger {
 		rootElId?: string,
 		options?: { initialRenderData?: RenderData | null }
 	) {
+
 		this._rpcClient = new RpcClient({ dstWindow: window.parent });
 
 		// Set initial render data if provided
@@ -103,7 +104,7 @@ export class UIMessenger {
 		}
 
 		// setup resize observer (your pattern)
-		this._stopResize = this.setupResizeObserver(rootElId);
+		this._stopResize = this.setupResizeObserver(rootElId || "root");
 
 		// keep cached render data up to date
 		this.onMessage("ui-lifecycle-iframe-render-data", (msg: any) => {
