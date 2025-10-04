@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/server-ui-react",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "React hook exposingrUIMessenger",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -23,7 +23,7 @@
     "src"
   ],
   "dependencies": {
-    "@fractal-mcp/server-ui": "*"
+    "@fractal-mcp/server-ui": "1.1.2"
   },
   "peerDependencies": {
     "react": ">=17 || >=18"
@@ -34,5 +34,3 @@
     "typescript": "^5.0.0"
   }
 }
-
-

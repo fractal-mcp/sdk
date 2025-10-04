@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/protocol",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "Shared protocol types for Fractal MCP packages",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -31,4 +31,3 @@
     "typescript": "^5.0.0"
   }
 }
-
