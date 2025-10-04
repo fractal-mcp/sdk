@@ -18,7 +18,8 @@ export type UseUIMessengerResult = {
   emitTool: (args: ToolPayload) => void;
 };
 
-export function useUIMessenger(): UseUIMessengerResult {
+export function useUIMessenger(args?: { forceWaitForRenderData?: boolean }): UseUIMessengerResult {
+  
   const [messaging, setMessaging] = useState<UIMessenger | null>(null);
   const [ready, setReady] = useState<boolean>(false);
 
@@ -29,7 +30,7 @@ export function useUIMessenger(): UseUIMessengerResult {
     let cancelled = false;
 
     if (!messaging && !clientPromiseRef.current) {
-      clientPromiseRef.current = initUIMessenger({ forceWaitForRenderData: true })
+      clientPromiseRef.current = initUIMessenger(args)
         .then((client: UIMessenger) => {
           if (cancelled) return client;
           clientRef.current = client;
