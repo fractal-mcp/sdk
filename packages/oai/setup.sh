@@ -1,0 +1,11 @@
+curl -O https://web-sandbox.oaiusercontent.com/assets/apply-csp-oMEag3sR.js
+curl -O https://web-sandbox.oaiusercontent.com/assets/create-async-iterator-ggfG9U7o.js
+curl -O https://web-sandbox.oaiusercontent.com/assets/index-C3jYjnPP.js
+curl -O https://web-sandbox.oaiusercontent.com/assets/main-xonCUAoo.js
+curl -O https://web-sandbox.oaiusercontent.com/assets/navigation-BRdOV7LN.js
+curl -O https://web-sandbox.oaiusercontent.com/assets/run-html-Do8mTV6K.js
+curl -O https://web-sandbox.oaiusercontent.com/assets/run-widget-code-BQGNBqus.js
+curl -O https://web-sandbox.oaiusercontent.com/assets/set-additional-globals-CXY3m52s.js
+curl -O https://web-sandbox.oaiusercontent.com/assets/set-safe-area-vars-Bn-pRjCL.js
+curl -O https://web-sandbox.oaiusercontent.com/assets/set-theme-Cu8raYyE.js
+curl -O https://web-sandbox.oaiusercontent.com/assets/types-Bm40F6nV.js
