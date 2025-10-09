@@ -8,9 +8,12 @@ import { getVitePlugins } from './plugins.js';
  * Internal function to bundle with a custom root directory
  */
 async function bundleWithRoot(args: BundleOptions & { root?: string }): Promise<void> {
+  console.log("WOOHOO - Build #1");
   const resolvedEntrypoint = resolve(args.entrypoint);
   const resolvedOut = resolve(args.out);
   const root = args.root ? resolve(args.root) : dirname(resolvedEntrypoint);
+  console.log("Bundling with root:", root);
+  console.log("Entrypoint:", resolvedEntrypoint);
   
   if (extname(resolvedEntrypoint) !== '.html') {
     throw new Error(`bundle() entrypoint must be a .html file, got: ${args.entrypoint}`);
@@ -19,11 +22,30 @@ async function bundleWithRoot(args: BundleOptions & { root?: string }): Promise<
   const vitePlugins = await getVitePlugins(args);
   await mkdir(dirname(resolvedOut), { recursive: true });
   
+  // Check for PostCSS config
+  const postcssConfigPath = join(root, 'postcss.config.js');
+  const tailwindConfigPath = join(root, 'tailwind.config.js');
+  try {
+    await access(postcssConfigPath);
+    console.log("✅ Found PostCSS config at:", postcssConfigPath);
+  } catch {
+    console.log("❌ No PostCSS config found at:", postcssConfigPath);
+  }
+  try {
+    await access(tailwindConfigPath);
+    console.log("✅ Found Tailwind config at:", tailwindConfigPath);
+  } catch {
+    console.log("❌ No Tailwind config found at:", tailwindConfigPath);
+  }
+  
   try {
     // Temporarily change cwd to root so Vite/PostCSS resolve correctly
     const originalCwd = process.cwd();
+    console.log("Current working directory:", originalCwd);
+    console.log("Changing to root:", root);
     try {
       process.chdir(root);
+      console.log("Changed cwd to:", process.cwd());
       
       await build({
         root,
@@ -62,6 +84,7 @@ async function bundleWithRoot(args: BundleOptions & { root?: string }): Promise<
  * Bundles an HTML file into a single self-contained HTML file
  */
 export async function bundle(args: BundleOptions): Promise<void> {
+  console.log("WOOHOO");
   await bundleWithRoot(args);
 }
 
@@ -86,6 +109,7 @@ export async function bundleReactComponent(args: BundleOptions): Promise<void> {
       packageDir = dirname(packageDir);
     }
   }
+  console.log("Found package directory:", packageDir);
   
   // Create temp files directly in package dir with unique names to avoid conflicts
   const tempId = Date.now();

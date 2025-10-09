@@ -19,7 +19,6 @@ export type UseUIMessengerResult = {
 };
 
 export function useUIMessenger(args?: { forceWaitForRenderData?: boolean }): UseUIMessengerResult {
-  
   const [messaging, setMessaging] = useState<UIMessenger | null>(null);
   const [ready, setReady] = useState<boolean>(false);
 

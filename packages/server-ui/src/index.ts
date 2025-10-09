@@ -3,6 +3,7 @@ import { RpcClient, RpcRequest } from "@fractal-mcp/shared-ui";
 
 type RenderData = Record<string, unknown>;
 
+type RequestPayload = IntentPayload | NotifyPayload | PromptPayload | ToolPayload | LinkPayload | RequestDataPayload;
 // ---- Message Payload Types ----
 export interface IntentPayload {
 	intent: string;
@@ -297,6 +298,10 @@ export class UIMessenger {
 	// ui-request-data (request-only by design)
 	requestData(payload: RequestDataPayload): RpcRequest {
 		return this._rpcClient.request("ui-request-data", payload);
+	}
+
+	request(payload: RequestPayload): RpcRequest {
+		return this._rpcClient.request("ui-request", payload);
 	}
 
 	get rpcClient(): RpcClient {

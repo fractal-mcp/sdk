@@ -7,6 +7,7 @@
         "dev": "vite --port 5174"
     },
     "dependencies": {
+        "@fractal-mcp/client-ui-react": "*",
         "@ai-sdk/react": "^1.2.12",
         "@mcp-ui/client": "^5.12.0",
         "react": "^19.0.0",

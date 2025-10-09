@@ -20,7 +20,9 @@ const google = createGoogleGenerativeAI({
 
 const systemMessage = `
 You are a helpful assistant. Help the user with their questions. 
-You have access to the Fractal tool registry, which provides you the ability to search for different tools. When you encounter a question that requires information from the internet, search for a tool first on fractal.
+Todays date is ${new Date().toLocaleDateString()}.
+Use common sense. Don't frustrate the user. Try to ACTUALLY be helpful. It would annoy the user if you made them be extremelye explicit about everything. If the user says "again", you can assume they've given you all the information you need. 
+If you a tool gives you a validation user, you should attempt to fix it. Don't just report back to the user that you failed if its your fault.
 `;
 
 /**
@@ -56,7 +58,8 @@ export async function callMcpToolDirect(
 app.post('/api/chat', async (req, res) => {
   const { messages } = req.body;
   const processedMessages = messages as UIMessage[];
-  const transport = new StreamableHTTPClientTransport(new URL("http://localhost:3000/"));
+  const transport = new StreamableHTTPClientTransport(new URL("http://localhost:3100"));
+  // const transport = new StreamableHTTPClientTransport(new URL("http://localhost:3000/"));
   // const transport = new StreamableHTTPClientTransport(new URL("https://mcpstorefront.com/?store=demostore.mock.shop&mode=tool"));
   
   const fractalVercel = new FractalVercel({
@@ -113,5 +116,3 @@ const port = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
-
-

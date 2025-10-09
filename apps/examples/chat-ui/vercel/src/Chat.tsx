@@ -11,7 +11,7 @@ export default function Chat() {
 
   // Forward UI action messages to the chat
   const handleUIActionMessage = useCallback(async (event: UIActionMessage) => {
-    // console.log("handleUIActionMessage", event)
+    console.log("handleUIActionMessage", event)
     switch (event.type) {
 
       // Sensible default: open link in new tab
@@ -73,74 +73,95 @@ export default function Chat() {
         {messages.filter((message) => !["system", "data"].includes(message.role)).map((m, index)   => (
             <div
               key={index}
-              className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex flex-col gap-4 ${m.role === 'user' ? 'items-end' : 'items-start'}`}
             >
-              <div
-                className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
-                  m.role === 'user'
-                    ? 'bg-blue-500 text-white rounded-br-md'
-                    : 'bg-white text-gray-800 border border-gray-200 rounded-bl-md shadow-sm'
-                }`}
-              >
-                <div className="flex items-center gap-2 text-xs font-medium mb-2 opacity-75">
-                  <div className={`w-2 h-2 rounded-full ${m.role === 'user' ? 'bg-blue-400' : 'bg-green-400'}`}></div>
-                  {m.role === 'user' ? 'You' : 'Fractal Assistant'}
-                </div>
-                <div className="leading-relaxed">
-            {m.parts.map((part, i) => {
-              if (part.type === 'text') return <span key={i}>{part.text}</span>;
-              
-              // Handle tool invocations
-              if (part.type === 'tool-invocation') {
-                const toolInvocation = (part as any).toolInvocation;
-                if (toolInvocation.result != null && toolInvocation.result.content != null && toolInvocation.result.content.length && toolInvocation.result.content[0] != null) {
-                  const contents = toolInvocation.result.content;
-                  return (
-                    <div key={i} className="inline-flex flex-row gap-3 mt-3 overflow-x-auto max-w-[90vw] -mx-4">
-                      {contents.map((content: any, contentIdx: number) => {
-                        if (isUIResource(content)) {
-                          const uiResource = content as UIResource;
-                          return (
-                            <div key={`${i}-${contentIdx}`} className="flex-shrink-0 max-w-[33vw]">
-                              <div style={{ display: 'inline-block' }}>
-                                <UIResourceRenderer
-                                  resource={uiResource.resource}
-                                  onUIAction={handleUIActionMessage}
-                                  htmlProps={{
-                                    autoResizeIframe: true,
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          );
-                        } else {
-                          return null;
-                        }
-                      })}
+              {(() => {
+                const elements: JSX.Element[] = [];
+                let textBuffer: JSX.Element[] = [];
+                let bubbleCount = 0;
+
+                const flushBubble = () => {
+                  if (textBuffer.length === 0) return;
+                  elements.push(
+                    <div
+                      key={`bubble-${bubbleCount++}`}
+                      className={`${'max-w-xs lg:max-w-md px-4 py-3 rounded-2xl'} ${
+                        m.role === 'user'
+                          ? 'bg-blue-500 text-white rounded-br-md'
+                          : 'bg-white text-gray-800 border border-gray-200 rounded-bl-md shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 text-xs font-medium mb-2 opacity-75">
+                        <div className={`w-2 h-2 rounded-full ${m.role === 'user' ? 'bg-blue-400' : 'bg-green-400'}`}></div>
+                        {m.role === 'user' ? 'You' : 'Fractal Assistant'}
+                      </div>
+                      <div className="leading-relaxed whitespace-pre-wrap break-words">
+                        {textBuffer}
+                      </div>
                     </div>
                   );
-                }
-                // Handle other tool calls
-                // return <div></div>
-                return (
-                  <div key={i} className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      <span className="font-medium">Tool:</span>
-                      <code className="px-2 py-1 bg-gray-100 rounded text-xs font-mono">
-                        {toolInvocation.toolName}
-                      </code>
-                    </div>
-                  </div>
-                );
-                
-              }
-              
-              return null;
-            })}
-                </div>
-              </div>
-          </div>
+                  textBuffer = [];
+                };
+
+                m.parts.forEach((part, iPart) => {
+                  if (part.type === 'text') {
+                    textBuffer.push(<span key={`text-${iPart}`}>{(part as any).text}</span>);
+                    return;
+                  }
+
+                  // not text → flush accumulated text first
+                  flushBubble();
+
+                  if (part.type === 'tool-invocation') {
+                    const toolInvocation = (part as any).toolInvocation;
+                    if (toolInvocation?.result?.content?.length && toolInvocation.result.content[0] != null) {
+                      const contents = toolInvocation.result.content;
+                      elements.push(
+                        <div key={`tools-${iPart}`} className="w-full flex flex-col">
+                          {contents.map((content: any, contentIdx: number) => {
+                            if (isUIResource(content)) {
+                              const uiResource = content as UIResource;
+                              return (
+                                <div key={`${iPart}-${contentIdx}`} className="w-full">
+                                  <UIResourceRenderer
+                                    resource={uiResource.resource}
+                                    onUIAction={handleUIActionMessage}
+                                    htmlProps={{
+                                      autoResizeIframe: true,
+                                      style: { border: 'none', width: '100%' },
+                                    }}
+                                  />
+                                </div>
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                      );
+                      return;
+                    }
+
+                    // Non-UI resource tool result
+                    elements.push(
+                      <div key={`tool-${iPart}`} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                          <span className="font-medium">Tool:</span>
+                          <code className="px-2 py-1 bg-gray-100 rounded text-xs font-mono">
+                            {toolInvocation?.toolName}
+                          </code>
+                        </div>
+                      </div>
+                    );
+                  }
+                });
+
+                // flush any trailing text
+                flushBubble();
+
+                return elements;
+              })()}
+            </div>
         ))}
         </div>
       </div>

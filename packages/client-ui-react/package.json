@@ -1,0 +1,37 @@
+{
+    "name": "@fractal-mcp/client-ui-react",
+    "version": "1.0.0",
+    "description": "Components for managing and communicating with iframed guest components",
+    "type": "module",
+    "types": "./dist/index.d.ts",
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "clean": "rm -rf dist",
+        "lint": "eslint src --ext .ts,.tsx",
+        "test": "echo 'no tests'"
+    },
+    "files": [
+        "dist",
+        "src"
+    ],
+    "dependencies": {
+        "@mcp-ui/client": "^5.12.0",
+        "@modelcontextprotocol/sdk": "*",
+        "@quilted/threads": "^3.1.3",
+        "@r2wc/react-to-web-component": "^2.0.4",
+        "@remote-dom/core": "^1.8.0",
+        "@remote-dom/react": "^1.2.2"
+    },
+    "devDependencies": {
+        "eslint": "^8.0.0",
+        "typescript": "^5.0.0"
+    }
+}

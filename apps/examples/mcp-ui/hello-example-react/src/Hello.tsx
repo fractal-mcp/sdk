@@ -3,7 +3,7 @@ import './index.css';
 
 
 export default function Hello() {
-  const { renderData, requestTool } = useUIMessenger();
+  const { renderData, requestTool } = useUIMessenger({ forceWaitForRenderData: true });
   const name = (renderData && (renderData.name as string)) || 'World';
 
   const handleGoodbyeClick = async () => {

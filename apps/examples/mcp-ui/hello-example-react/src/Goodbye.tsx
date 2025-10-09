@@ -2,7 +2,7 @@ import { useUIMessenger } from '@fractal-mcp/server-ui-react';
 import './index.css';
 
 export default function Goodbye() {
-  const { renderData, requestLink } = useUIMessenger();
+  const { renderData, requestLink } = useUIMessenger({ forceWaitForRenderData: true });
   const name = (renderData && (renderData.name as string)) || 'Friend';
 
   const onGoodbyeClick = async () => {

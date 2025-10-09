@@ -66,7 +66,7 @@ async function startServer(port: number = 3000) {
       content: { type: 'rawHtml', htmlString },
       encoding: 'text',
       uiMetadata: {
-        'initial-render-data': { name },
+        'initial-render-data': { name }
       },
     });
 
