@@ -1,0 +1,1 @@
+import{a as n}from"./main-xonCUAoo.js";const o=({theme:s,doc:e=n()})=>{var m;const t=(m=e==null?void 0:e.contentDocument)==null?void 0:m.documentElement;t&&(t.dataset.theme=s,t.classList.remove("light","dark"),t.classList.add(s))};export{o as setTheme};
