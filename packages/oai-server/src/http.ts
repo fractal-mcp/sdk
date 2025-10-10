@@ -21,8 +21,8 @@ export type OpenAIWidgetHttpServerOptions = {
   postPath?: string;
   /** Enable CORS (default: true) */
   enableCors?: boolean;
-  /** Factory function to create a new McpServer for each session */
-  serverFactory: () => McpServer;
+  /** Factory function to create a new McpServer for each session (can be async) */
+  serverFactory: () => McpServer | Promise<McpServer>;
 };
 
 /**
@@ -58,7 +58,7 @@ export function createOpenAIWidgetHttpServer(
     }
 
     console.log(`[handleSseRequest] Creating server via factory`);
-    const server = serverFactory();
+    const server = await serverFactory();
     console.log(`[handleSseRequest] Server created, creating SSE transport`);
     
     const transport = new SSEServerTransport(postPath, res);
