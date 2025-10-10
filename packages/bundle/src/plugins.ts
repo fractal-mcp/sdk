@@ -6,7 +6,10 @@ import { detectFramework } from './detection.js';
 /**
  * Returns appropriate Vite plugins based on detected framework
  */
-export async function getVitePlugins(args: BundleOptions): Promise<Plugin[]> {
+export async function getVitePlugins(
+  args: BundleOptions, 
+  options?: { useSingleFile?: boolean }
+): Promise<Plugin[]> {
   const framework = await detectFramework(args.entrypoint);
   const plugins: (Plugin | Plugin[])[] = [];
 
@@ -40,9 +43,13 @@ export async function getVitePlugins(args: BundleOptions): Promise<Plugin[]> {
   }
 
   // Important: single-file plugin must run LAST, after framework/Tailwind/PostCSS transforms
-  const singleFilePlugin = viteSingleFile();
-  if (singleFilePlugin) {
-    plugins.push(singleFilePlugin as Plugin);
+  // Only add it if explicitly requested (default: true for backwards compatibility)
+  const useSingleFile = options?.useSingleFile !== false;
+  if (useSingleFile) {
+    const singleFilePlugin = viteSingleFile();
+    if (singleFilePlugin) {
+      plugins.push(singleFilePlugin as Plugin);
+    }
   }
 
   return plugins.flat();
