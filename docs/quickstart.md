@@ -105,6 +105,8 @@ startOpenAIWidgetHttpServer({
 });
 ```
 
+`registerOpenAIWidget` takes care of registering your widgets tools and resources.
+
 ## Bundle Your Widget
 
 Bundle your Component.tsx using the CLI:
@@ -114,6 +116,7 @@ npx @fractal-mcp/cli bundle --entrypoint=ui/Component.tsx --out=bundle --root-on
 ```
 
 This creates `bundle/index.html` with your widget bundled as a single HTML file, including all your Tailwind styles.
+The `--root-only` option tells the bundler to only output the html body rather than a full standalone html file.
 
 ## Set Up TypeScript Configuration
 
