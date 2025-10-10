@@ -16,7 +16,7 @@ While OpenAI's official SDK is still in development, this toolkit provides produ
 
 This monorepo contains the following packages:
 
-### 🎨 UI Development
+### UI Development
 
 #### [@fractal-mcp/oai-hooks](./packages/oai-hooks)
 React hooks for building widget UIs that communicate with ChatGPT.
@@ -250,34 +250,6 @@ Check out the [examples directory](./apps/examples) for complete working example
 
 - **[oai-apps](./apps/examples/oai-apps)** - Full example showing server and UI integration
 
-## How It Works
-
-### Architecture Overview
-
-```
-┌─────────────────────────────────────────────┐
-│              ChatGPT                        │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │  Widget UI (React + oai-hooks)      │   │
-│  │  - useWidgetProps()                 │   │
-│  │  - useWidgetState()                 │   │
-│  │  - useDisplayMode()                 │   │
-│  └─────────────────────────────────────┘   │
-│                  ↑                          │
-│                  │ structuredContent        │
-└──────────────────┼──────────────────────────┘
-                   │
-                   │ MCP Protocol (SSE)
-                   ↓
-┌─────────────────────────────────────────────┐
-│  MCP Server (oai-server)                    │
-│  - registerOpenAIWidget()                   │
-│  - Tool handlers                            │
-│  - Resource serving                         │
-└─────────────────────────────────────────────┘
-```
-
 ### Data Flow
 
 1. **User invokes tool** in ChatGPT
@@ -368,6 +340,7 @@ MIT
 - [OpenAI Apps SDK Documentation](https://developers.openai.com/apps-sdk/)
 - [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 - [OpenAI Apps SDK Examples](https://github.com/openai/openai-apps-sdk-examples)
+- [Fractal MCP](https://fractalmcp.com/)
 
 ## Credits
 
