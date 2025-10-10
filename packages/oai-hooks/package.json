@@ -2,6 +2,10 @@
   "name": "@fractal-mcp/oai-hooks",
   "version": "1.0.0",
   "description": "React hooks for building OpenAI Apps SDK compatible widget UIs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fractal-mcp/sdk.git"
+  },
   "type": "module",
   "types": "./dist/index.d.ts",
   "sideEffects": false,

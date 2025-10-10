@@ -2,6 +2,10 @@
   "name": "@fractal-mcp/bundle",
   "version": "1.0.0",
   "description": "Bundling utilities for fractal MCP applications",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fractal-mcp/sdk.git"
+  },
   "type": "module",
   "types": "./dist/index.d.ts",
   "sideEffects": false,

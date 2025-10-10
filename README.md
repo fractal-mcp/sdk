@@ -2,6 +2,9 @@
 
 A comprehensive toolkit for building [OpenAI Apps SDK](https://developers.openai.com/apps-sdk/) compatible applications. This monorepo provides everything you need to create rich, interactive widget applications for ChatGPT using the Model Context Protocol (MCP).
 
+## Getting Started
+Head to our [quickstart](./docs/quickstart.md) if you would like to skip straight to building!
+
 ## What is this?
 
 OpenAI's Apps SDK allows developers to build interactive widgets that run inside ChatGPT. This SDK makes it easier to:

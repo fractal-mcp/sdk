@@ -1,6 +1,10 @@
 {
   "name": "example-oai-app",
   "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fractal-mcp/sdk.git"
+  },
   "private": true,
   "type": "module",
   "scripts": {

@@ -83,15 +83,3 @@ startOpenAIWidgetHttpServer({
 });
 
 console.log("OpenAI widget server starting on http://localhost:8001");
-
-// // Dont delete yet - i need to run this
-// bundleJSEntrypoint({
-//   entrypoint: resolve(__dirname, '../ui/main.tsx'),
-//   out: './bundled',
-//   rootElement: 'root',
-//   output: {
-//     type: 'html',
-//     inline: { js: true, css: true },
-//     rootOnly: false  // Just the snippet, no <html> wrapper
-//   }
-// });

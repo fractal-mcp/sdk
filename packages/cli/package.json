@@ -2,6 +2,10 @@
   "name": "@fractal-mcp/cli",
   "version": "1.0.0",
   "description": "CLI tools for Fractal MCP development",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fractal-mcp/sdk.git"
+  },
   "type": "module",
   "bin": {
     "fractal-mcp": "./dist/cli.js"
