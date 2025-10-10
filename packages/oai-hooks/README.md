@@ -15,7 +15,7 @@ This is the **UI companion** to [@fractal-mcp/oai-server](https://github.com/fra
 
 ## Credits
 
-This package is based on the reference hooks from [OpenAI's Apps SDK Examples](https://github.com/openai/openai-apps-sdk-examples/). The original code provides excellent patterns for building widget UIs, but isn't published as an importable npm package. This package makes those hooks easily installable and reusable across projects with clean file naming and comprehensive documentation.
+This package is based on the reference hooks from [OpenAI's Apps SDK Examples](https://github.com/openai/openai-apps-sdk-examples/). The original code provides excellent patterns for building widget UIs, but isn't published as an importable npm package. This package makes those hooks easily installable and reusable across projects.
 
 ## Installation
 

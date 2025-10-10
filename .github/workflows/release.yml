@@ -54,13 +54,11 @@ jobs:
       - name: Build packages in order
         run: |
           echo "=== Building packages in specified order ==="
-          npx turbo build --filter=@fractal-mcp/protocol --verbosity=2
-          npx turbo build --filter=@fractal-mcp/shared-ui --verbosity=2
-          npx turbo build --filter=@fractal-mcp/server-ui --verbosity=2
-          npx turbo build --filter=@fractal-mcp/server-ui-react --verbosity=2
           npx turbo build --filter=@fractal-mcp/mcp-express --verbosity=2
           npx turbo build --filter=@fractal-mcp/bundle --verbosity=2
           npx turbo build --filter=@fractal-mcp/cli --verbosity=2
+          npx turbo build --filter=@fractal-mcp/oai-hooks --verbosity=2
+          npx turbo build --filter=@fractal-mcp/oai-server --verbosity=2
           echo "=== Ordered build completed ==="
           
       - name: Type check
@@ -71,13 +69,11 @@ jobs:
       - name: Post-build package check
         run: |
           echo "=== Checking build outputs ==="
-          ls -la packages/protocol/dist/ || echo "protocol dist not found"
-          ls -la packages/shared-ui/dist/ || echo "shared-ui dist not found"
-          ls -la packages/server-ui/dist/ || echo "server-ui dist not found"
-          ls -la packages/server-ui-react/dist/ || echo "server-ui-react dist not found"
           ls -la packages/mcp-express/dist/ || echo "mcp-express dist not found"
           ls -la packages/bundle/dist/ || echo "bundle dist not found"
           ls -la packages/cli/dist/ || echo "cli dist not found"
+          ls -la packages/oai-hooks/dist/ || echo "oai-hooks dist not found"
+          ls -la packages/oai-server/dist/ || echo "oai-server dist not found"
 
       - name: Create Git tag
         run: |
@@ -102,13 +98,11 @@ jobs:
 
           # Explicit ordered list of packages to publish
           packages_in_order=(
-            "packages/protocol"
-            "packages/shared-ui"
-            "packages/server-ui"
-            "packages/server-ui-react"
             "packages/mcp-express"
             "packages/bundle"
             "packages/cli"
+            "packages/oai-hooks"
+            "packages/oai-server"
           )
 
           VERSION="${{ inputs.version }}"
