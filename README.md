@@ -12,9 +12,15 @@ OpenAI's Apps SDK allows developers to build interactive widgets that run inside
 
 While OpenAI's official SDK is still in development, this toolkit provides production-ready packages to start building today.
 
-## Packages
+## Packages Overview
 
-This monorepo contains the following packages:
+- **[@fractal-mcp/oai-hooks](./packages/oai-hooks)** - React hooks for building widget UIs
+- **[@fractal-mcp/oai-server](./packages/oai-server)** - Server toolkit for building MCP servers with widgets
+- **[@fractal-mcp/bundle](./packages/bundle)** - Bundling library for React components, JS/TS, and HTML files
+- **[@fractal-mcp/cli](./packages/cli)** - Command-line tools for bundling widgets
+- **[@fractal-mcp/mcp-express](./packages/mcp-express)** - Express utilities for serving MCP servers
+
+## Package Details
 
 ### UI Development
 
@@ -48,11 +54,11 @@ function WeatherWidget() {
 }
 ```
 
-[📖 Full Documentation](./packages/oai-hooks/README.md)
+[Full Documentation](./packages/oai-hooks/README.md)
 
 ---
 
-### 🔧 Server Development
+### Server Development
 
 #### [@fractal-mcp/oai-server](./packages/oai-server)
 Server-side toolkit for building MCP servers with custom widget UIs.
@@ -91,11 +97,11 @@ registerOpenAIWidget(
 startOpenAIWidgetHttpServer({ port: 8000, serverFactory: () => server });
 ```
 
-[📖 Full Documentation](./packages/oai-server/README.md)
+[Full Documentation](./packages/oai-server/README.md)
 
 ---
 
-### 📦 Bundling & Deployment
+### Bundling & Deployment
 
 #### [@fractal-mcp/bundle](./packages/bundle)
 Bundling utilities for React components, JS/TS entry points, and HTML files.
@@ -122,7 +128,7 @@ await bundleReactComponent({
 // Outputs: dist/index.html (single file with everything inlined)
 ```
 
-[📖 Full Documentation](./packages/bundle/README.md)
+[Full Documentation](./packages/bundle/README.md)
 
 ---
 
@@ -143,11 +149,11 @@ npx @fractal-mcp/cli bundle --entrypoint=./src/Widget.tsx --out=./dist
 npx @fractal-mcp/cli bundle --entrypoint=./index.html --out=./dist
 ```
 
-[📖 Full Documentation](./packages/cli/README.md)
+[Full Documentation](./packages/cli/README.md)
 
 ---
 
-### 🌐 Server Utilities
+### Server Utilities
 
 #### [@fractal-mcp/mcp-express](./packages/mcp-express)
 Utilities for serving MCP servers with Express, including connection to Fractal's registry.
@@ -156,7 +162,7 @@ Utilities for serving MCP servers with Express, including connection to Fractal'
 npm install @fractal-mcp/mcp-express
 ```
 
-[📖 Full Documentation](./packages/mcp-express/README.md)
+[Full Documentation](./packages/mcp-express/README.md)
 
 ---
 
