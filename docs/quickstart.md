@@ -1,6 +1,6 @@
 # Quickstart Guide
 
-Get up and running with the Fractal OpenAI Apps SDK in minutes.
+Get up and running with the Fractal SDK in minutes.
 
 ## Prerequisites
 

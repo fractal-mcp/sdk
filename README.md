@@ -1,4 +1,4 @@
-# Fractal OpenAI Apps SDK
+# Fractal SDK
 
 A comprehensive toolkit for building [OpenAI Apps SDK](https://developers.openai.com/apps-sdk/) compatible applications. This monorepo provides everything you need to create rich, interactive widget applications for ChatGPT using the Model Context Protocol (MCP).
 
