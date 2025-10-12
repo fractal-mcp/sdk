@@ -70,37 +70,64 @@ function ensureWebplus(): Window["webplus"] {
   return window.webplus;
 }
 
+// Defensive accessor that safely gets a value from webplus
+function getWebplusValue<K extends keyof WebplusGlobals>(
+  key: K
+): WebplusGlobals[K] | null {
+  try {
+    const webplus = ensureWebplus();
+    if (!webplus) {
+      return null;
+    }
+    
+    const value = webplus[key];
+    // Return null for undefined values instead of undefined
+    return value === undefined ? null : value;
+  } catch (error) {
+    console.warn(`[useWebplusGlobal] Failed to get ${String(key)}:`, error);
+    return null;
+  }
+}
+
 export function useWebplusGlobal<K extends keyof WebplusGlobals>(
   key: K
-): WebplusGlobals[K] {
+): WebplusGlobals[K] | null {
   return useSyncExternalStore(
     (onChange) => {
       if (typeof window === "undefined") {
         return () => {};
       }
 
-      const webplus = ensureWebplus();
+      try {
+        const webplus = ensureWebplus();
 
-      const handleSetGlobal = (event: SetGlobalsEvent) => {
-        const value = event.detail.globals[key];
-        if (value === undefined) {
-          return;
-        }
+        const handleSetGlobal = (event: SetGlobalsEvent) => {
+          try {
+            const value = event.detail.globals[key];
+            if (value === undefined) {
+              return;
+            }
 
-        Object.assign(webplus, event.detail.globals);
-        onChange();
-      };
+            Object.assign(webplus, event.detail.globals);
+            onChange();
+          } catch (error) {
+            console.warn(`[useWebplusGlobal] Error in handleSetGlobal for ${String(key)}:`, error);
+          }
+        };
 
-      window.addEventListener(SET_GLOBALS_EVENT_TYPE, handleSetGlobal, {
-        passive: true,
-      });
+        window.addEventListener(SET_GLOBALS_EVENT_TYPE, handleSetGlobal, {
+          passive: true,
+        });
 
-      return () => {
-        window.removeEventListener(SET_GLOBALS_EVENT_TYPE, handleSetGlobal);
-      };
+        return () => {
+          window.removeEventListener(SET_GLOBALS_EVENT_TYPE, handleSetGlobal);
+        };
+      } catch (error) {
+        console.warn(`[useWebplusGlobal] Failed to setup listener for ${String(key)}:`, error);
+        return () => {};
+      }
     },
-    () => ensureWebplus()[key],
-    () => ensureWebplus()[key]
+    () => getWebplusValue(key),
+    () => getWebplusValue(key)
   );
 }
-
