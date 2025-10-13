@@ -12,6 +12,7 @@ OpenAI's Apps SDK allows developers to build interactive widgets that run inside
 - **Build MCP servers** with custom widget UIs
 - **Create widget UI components** using React hooks
 - **Bundle and deploy** your widgets for production
+- **Preview widgets** before deployment.
 
 While OpenAI's official SDK is still in development, this toolkit provides production-ready packages to start building today.
 
@@ -19,9 +20,11 @@ While OpenAI's official SDK is still in development, this toolkit provides produ
 
 - **[@fractal-mcp/oai-hooks](./packages/oai-hooks)** - React hooks for building widget UIs
 - **[@fractal-mcp/oai-server](./packages/oai-server)** - Server toolkit for building MCP servers with widgets
+- **[@fractal-mcp/oai-preview](./packages/oai-preview)** - Development tool for previewing widgets
 - **[@fractal-mcp/bundle](./packages/bundle)** - Bundling library for React components, JS/TS, and HTML files
 - **[@fractal-mcp/cli](./packages/cli)** - Command-line tools for bundling widgets
 - **[@fractal-mcp/mcp-express](./packages/mcp-express)** - Express utilities for serving MCP servers
+
 
 ## Package Details
 
@@ -166,6 +169,33 @@ npm install @fractal-mcp/mcp-express
 ```
 
 [Full Documentation](./packages/mcp-express/README.md)
+
+---
+
+### Development & Testing
+
+#### [@fractal-mcp/oai-preview](./packages/oai-preview)
+**Development/Testing Tool** - React component for previewing and testing widgets.
+
+```bash
+npm install --save-dev @fractal-mcp/oai-preview
+```
+
+**Example:**
+```tsx
+import { WidgetDisplayComponent } from "@fractal-mcp/oai-preview";
+
+<WidgetDisplayComponent
+  htmlSnippet={widgetHtml}
+  toolInput={{ location: "San Francisco" }}
+  toolOutput={{ temp: 72, condition: "Sunny" }}
+  onToolCall={async (name, params) => {/* handle tool calls */}}
+/>
+```
+
+**Credits:** Built by studying [MCPJam Inspector](https://github.com/MCPJam/inspector) and ChatGPT's widget source code.
+
+[Full Documentation](./packages/oai-preview/README.md)
 
 ---
 
@@ -316,7 +346,8 @@ sdk/
 │   ├── oai-server/     # Server toolkit
 │   ├── bundle/         # Bundling library
 │   ├── cli/            # CLI tools
-│   └── mcp-express/    # Express utilities
+│   ├── mcp-express/    # Express utilities
+│   └── oai-preview/    # 🧪 Dev/testing tool
 └── apps/
     └── examples/       # Example applications
 ```
@@ -353,5 +384,9 @@ MIT
 
 ## Credits
 
-This SDK is built on the foundation of OpenAI's Apps SDK examples and makes them easily accessible as reusable npm packages. Special thanks to the OpenAI team for pioneering this approach to building interactive AI applications.
+This SDK is built on the foundation of OpenAI's Apps SDK examples and makes them easily accessible as reusable npm packages. Special thanks to:
+
+- **OpenAI** for pioneering the Apps SDK and widget approach to building interactive AI applications
+- **[MCPJam Inspector](https://github.com/MCPJam/inspector)** for their excellent open-source MCP testing platform, which helped inform our development tooling
+- The **MCP community** for building an ecosystem of tools and servers
 
