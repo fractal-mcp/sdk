@@ -20,7 +20,7 @@ While OpenAI's official SDK is still in development, this toolkit provides produ
 
 - **[@fractal-mcp/oai-hooks](./packages/oai-hooks)** - React hooks for building widget UIs
 - **[@fractal-mcp/oai-server](./packages/oai-server)** - Server toolkit for building MCP servers with widgets
-- **[@fractal-mcp/oai-preview](./packages/oai-preview)** - Development tool for previewing widgets locally (not for production)
+- **[@fractal-mcp/oai-preview](./packages/oai-preview)** - Development tool for previewing widgets
 - **[@fractal-mcp/bundle](./packages/bundle)** - Bundling library for React components, JS/TS, and HTML files
 - **[@fractal-mcp/cli](./packages/cli)** - Command-line tools for bundling widgets
 - **[@fractal-mcp/mcp-express](./packages/mcp-express)** - Express utilities for serving MCP servers
