@@ -138,19 +138,19 @@ export function WidgetPreviewComponent({
             }
           };
 
-          // Define window.openai as non-writable property
+          // Define window.openai as writable property (to match OpenAI's actual behavior)
           Object.defineProperty(window, 'openai', {
             value: openaiAPI,
-            writable: false,
-            configurable: false,
+            writable: true,
+            configurable: true,
             enumerable: true
           });
 
-          // Define window.webplus as non-writable property
+          // Define window.webplus as writable property
           Object.defineProperty(window, 'webplus', {
             value: openaiAPI,
-            writable: false,
-            configurable: false,
+            writable: true,
+            configurable: true,
             enumerable: true
           });
 
