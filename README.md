@@ -373,7 +373,7 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 
 ## License
 
-MIT
+Apache License, Version 2.0
 
 ## Resources
 
