@@ -4,8 +4,6 @@ on:
   pull_request:
     branches:
       - main
-      - master
-      - develop
 
 jobs:
   test:
@@ -24,6 +22,9 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+      
+      - name: Fix optional dependencies (Rollup)
+        run: npm install --no-save @rollup/rollup-linux-x64-gnu
       
       - name: Run tests
         run: npm run test
