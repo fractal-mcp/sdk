@@ -26,6 +26,9 @@ jobs:
       - name: Fix optional dependencies (Rollup)
         run: npm install --no-save @rollup/rollup-linux-x64-gnu
       
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      
       - name: Run tests
         run: npm run test
       
