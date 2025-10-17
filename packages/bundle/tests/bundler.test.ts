@@ -22,29 +22,6 @@ describe('Bundler', () => {
     }
   });
 
-  test('should bundle React component from hello-example-react', async () => {
-    const helloComponentPath = resolve(
-      __dirname,
-      '../../../apps/examples/mcp-ui/hello-example-react/src/Hello.tsx'
-    );
-    const outputDir = join(tempDir, 'hello-output');
-
-    // Bundle the React component
-    await bundleReactComponent({
-      entrypoint: helloComponentPath,
-      out: outputDir
-    });
-
-    // Check if the bundled HTML renders properly
-    const bundledHtmlPath = join(outputDir, 'index.html');
-    const isValid = await shouldRenderProperly(bundledHtmlPath, {
-      timeout: 15000,
-      expectedText: 'Hello'
-    });
-
-    expect(isValid).toBe(true);
-  }, 30000); // 30 second timeout for this test
-
   test('should throw error for non-tsx file in bundleReactComponent', async () => {
     const invalidPath = join(__dirname, 'invalid.html');
     

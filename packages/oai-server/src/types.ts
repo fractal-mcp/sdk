@@ -26,6 +26,8 @@ export type OpenAIWidget<TInputSchema extends z.ZodType = z.ZodType> = {
   inputSchema?: TInputSchema;
   /** Optional description for the widget/tool */
   description?: string;
+  /** Optional additional metadata to include in the widget resource */
+  resourceMeta?: Record<string, any>;
 };
 
 /**

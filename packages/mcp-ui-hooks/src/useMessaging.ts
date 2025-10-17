@@ -50,7 +50,6 @@ export function useUIMessenger(args?: { forceWaitForRenderData?: boolean }): Use
       cancelled = true;
     };
     // We intentionally run once on mount; the singleton is global
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Helper function to get the client promise
