@@ -51,16 +51,11 @@ jobs:
           # Update all package versions using the Node.js script
           node scripts/update-versions.js "${{ inputs.version }}"
 
-      - name: Build packages in order
+      - name: Build packages
         run: |
-          echo "=== Building packages in specified order ==="
-          npx turbo build --filter=@fractal-mcp/mcp-express --verbosity=2
-          npx turbo build --filter=@fractal-mcp/bundle --verbosity=2
-          npx turbo build --filter=@fractal-mcp/cli --verbosity=2
-          npx turbo build --filter=@fractal-mcp/oai-hooks --verbosity=2
-          npx turbo build --filter=@fractal-mcp/oai-server --verbosity=2
-          npx turbo build --filter=@fractal-mcp/oai-preview --verbosity=2
-          echo "=== Ordered build completed ==="
+          echo "=== Building all packages (Turbo handles dependency order) ==="
+          npx turbo build --verbosity=2
+          echo "=== Build completed ==="
           
       - name: Type check
         run: |
@@ -70,6 +65,9 @@ jobs:
       - name: Post-build package check
         run: |
           echo "=== Checking build outputs ==="
+          ls -la packages/shared-ui/dist/ || echo "shared-ui dist not found"
+          ls -la packages/mcp-ui-messenger/dist/ || echo "mcp-ui-messenger dist not found"
+          ls -la packages/mcp-ui-hooks/dist/ || echo "mcp-ui-hooks dist not found"
           ls -la packages/mcp-express/dist/ || echo "mcp-express dist not found"
           ls -la packages/bundle/dist/ || echo "bundle dist not found"
           ls -la packages/cli/dist/ || echo "cli dist not found"
@@ -100,6 +98,9 @@ jobs:
 
           # Explicit ordered list of packages to publish
           packages_in_order=(
+            "packages/shared-ui"
+            "packages/mcp-ui-messenger"
+            "packages/mcp-ui-hooks"
             "packages/mcp-express"
             "packages/bundle"
             "packages/cli"

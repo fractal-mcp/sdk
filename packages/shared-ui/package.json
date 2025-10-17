@@ -1,0 +1,38 @@
+{
+    "name": "@fractal-mcp/shared-ui",
+    "version": "1.0.0",
+    "description": "rpc layer for iframe communication",
+    "type": "module",
+    "types": "./dist/index.d.ts",
+    "sideEffects": false,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/fractal-mcp/sdk.git",
+      "directory": "packages/shared-ui"
+    },
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    },
+    "scripts": {
+      "build": "tsc",
+      "dev": "tsc --watch",
+      "clean": "rm -rf dist",
+      "lint": "eslint src --ext .ts,.tsx",
+      "test": "jest --config ./jest.config.cjs"
+    },
+    "files": [
+      "dist",
+      "src",
+      "tests"
+    ],
+    "devDependencies": {
+      "@types/node": "^20.0.0",
+      "eslint": "^8.0.0",
+      "typescript": "^5.0.0"
+    }
+  }
+  
+  

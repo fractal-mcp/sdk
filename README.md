@@ -1,34 +1,51 @@
 # Fractal SDK
 
-A comprehensive toolkit for building [OpenAI Apps SDK](https://developers.openai.com/apps-sdk/) compatible applications. This monorepo provides everything you need to create rich, interactive widget applications for ChatGPT using the Model Context Protocol (MCP).
+A comprehensive toolkit for embedding interactive UIs in chat applications. This monorepo provides everything you need to create rich, interactive widget applications using the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) and cross-iframe messaging.
 
 ## Getting Started
 Head to our [quickstart](./docs/quickstart.md) if you would like to skip straight to building!
 
 ## What is this?
 
-OpenAI's Apps SDK allows developers to build interactive widgets that run inside ChatGPT. This SDK makes it easier to:
+This SDK provides tools for embedding UIs in chat applications including:
+
+- **[OpenAI Apps SDK](https://developers.openai.com/apps-sdk/)** - Build interactive widgets for ChatGPT
+- **[MCP-UI Protocol](https://mcpui.dev/guide/embeddable-ui)** - Build embeddable UIs with cross-iframe messaging
+- **Custom embedding solutions** - Use our messaging layer for any iframe-based UI embedding
+
+The SDK makes it easier to:
 
 - **Build MCP servers** with custom widget UIs
 - **Create widget UI components** using React hooks
+- **Embed UIs** using cross-iframe messaging protocols
 - **Bundle and deploy** your widgets for production
-- **Preview widgets** before deployment.
+- **Preview widgets** before deployment
 
-While OpenAI's official SDK is still in development, this toolkit provides production-ready packages to start building today.
+This toolkit provides production-ready packages to start building today.
 
 ## Packages Overview
 
-- **[@fractal-mcp/oai-hooks](./packages/oai-hooks)** - React hooks for building widget UIs
+### OpenAI Apps SDK Packages
+- **[@fractal-mcp/oai-hooks](./packages/oai-hooks)** - React hooks for building widget UIs (OpenAI Apps SDK)
 - **[@fractal-mcp/oai-server](./packages/oai-server)** - Server toolkit for building MCP servers with widgets
 - **[@fractal-mcp/oai-preview](./packages/oai-preview)** - Development tool for previewing widgets
+
+### MCP-UI / Cross-iframe Messaging Packages
+- **[@fractal-mcp/shared-ui](./packages/shared-ui)** - RPC layer for iframe communication
+- **[@fractal-mcp/mcp-ui-messenger](./packages/mcp-ui-messenger)** - MCP-UI compatible iframe messenger
+- **[@fractal-mcp/mcp-ui-hooks](./packages/mcp-ui-hooks)** - React hooks for MCP-UI messaging
+
+### Bundling & Deployment
 - **[@fractal-mcp/bundle](./packages/bundle)** - Bundling library for React components, JS/TS, and HTML files
 - **[@fractal-mcp/cli](./packages/cli)** - Command-line tools for bundling widgets
+
+### Server Utilities
 - **[@fractal-mcp/mcp-express](./packages/mcp-express)** - Express utilities for serving MCP servers
 
 
 ## Package Details
 
-### UI Development
+### OpenAI Apps SDK
 
 #### [@fractal-mcp/oai-hooks](./packages/oai-hooks)
 React hooks for building widget UIs that communicate with ChatGPT.
@@ -63,8 +80,6 @@ function WeatherWidget() {
 [Full Documentation](./packages/oai-hooks/README.md)
 
 ---
-
-### Server Development
 
 #### [@fractal-mcp/oai-server](./packages/oai-server)
 Server-side toolkit for building MCP servers with custom widget UIs.
@@ -104,6 +119,120 @@ startOpenAIWidgetHttpServer({ port: 8000, serverFactory: () => server });
 ```
 
 [Full Documentation](./packages/oai-server/README.md)
+
+---
+
+#### [@fractal-mcp/oai-preview](./packages/oai-preview)
+**Development/Testing Tool** - React component for previewing and testing widgets.
+
+```bash
+npm install --save-dev @fractal-mcp/oai-preview
+```
+
+**Example:**
+```tsx
+import { WidgetDisplayComponent } from "@fractal-mcp/oai-preview";
+
+<WidgetDisplayComponent
+  htmlSnippet={widgetHtml}
+  toolInput={{ location: "San Francisco" }}
+  toolOutput={{ temp: 72, condition: "Sunny" }}
+  onToolCall={async (name, params) => {/* handle tool calls */}}
+/>
+```
+
+**Credits:** Built by studying [MCPJam Inspector](https://github.com/MCPJam/inspector) and ChatGPT's widget source code.
+
+[Full Documentation](./packages/oai-preview/README.md)
+
+---
+
+### MCP-UI / Cross-iframe Messaging
+
+#### [@fractal-mcp/shared-ui](./packages/shared-ui)
+Low-level RPC communication layer for iframe messaging.
+
+```bash
+npm install @fractal-mcp/shared-ui
+```
+
+**Key features:**
+- RPC-style request/response messaging
+- Event emission and listening
+- Message correlation tracking
+- Works with any iframe messaging protocol
+
+[Full Documentation](./packages/shared-ui/README.md)
+
+---
+
+#### [@fractal-mcp/mcp-ui-messenger](./packages/mcp-ui-messenger)
+MCP-UI compatible cross-iframe messenger for embeddable UIs.
+
+```bash
+npm install @fractal-mcp/mcp-ui-messenger
+```
+
+**Key features:**
+- Implements [MCP-UI Embeddable UI Protocol](https://mcpui.dev/guide/embeddable-ui)
+- Automatic iframe lifecycle management
+- Render data handling
+- Intent, notification, prompt, and tool messaging
+- Auto-resize observer
+
+**Example:**
+```typescript
+import { initUIMessenger } from '@fractal-mcp/mcp-ui-messenger';
+
+const messenger = await initUIMessenger({ rootElId: 'root' });
+const renderData = messenger.getRenderData();
+
+messenger.emitIntent({ 
+  intent: 'button-clicked',
+  params: { timestamp: Date.now() }
+});
+```
+
+[Full Documentation](./packages/mcp-ui-messenger/README.md)
+
+---
+
+#### [@fractal-mcp/mcp-ui-hooks](./packages/mcp-ui-hooks)
+React hooks for MCP-UI cross-iframe messaging.
+
+```bash
+npm install @fractal-mcp/mcp-ui-hooks
+```
+
+**Key features:**
+- Dead simple React integration
+- Automatic initialization and cleanup
+- All MCP-UI message types supported
+- TypeScript support
+
+**Example:**
+```tsx
+import { useUIMessenger } from '@fractal-mcp/mcp-ui-hooks';
+
+function App() {
+  const { ready, renderData, emitIntent } = useUIMessenger();
+  
+  if (!ready) return <div>Loading...</div>;
+  
+  return (
+    <div>
+      <h1>Theme: {renderData?.theme}</h1>
+      <button onClick={() => emitIntent({ intent: 'action' })}>
+        Click Me
+      </button>
+    </div>
+  );
+}
+```
+
+> **Note:** For OpenAI Apps SDK, use `@fractal-mcp/oai-hooks` instead.
+
+[Full Documentation](./packages/mcp-ui-hooks/README.md)
 
 ---
 
@@ -169,33 +298,6 @@ npm install @fractal-mcp/mcp-express
 ```
 
 [Full Documentation](./packages/mcp-express/README.md)
-
----
-
-### Development & Testing
-
-#### [@fractal-mcp/oai-preview](./packages/oai-preview)
-**Development/Testing Tool** - React component for previewing and testing widgets.
-
-```bash
-npm install --save-dev @fractal-mcp/oai-preview
-```
-
-**Example:**
-```tsx
-import { WidgetDisplayComponent } from "@fractal-mcp/oai-preview";
-
-<WidgetDisplayComponent
-  htmlSnippet={widgetHtml}
-  toolInput={{ location: "San Francisco" }}
-  toolOutput={{ temp: 72, condition: "Sunny" }}
-  onToolCall={async (name, params) => {/* handle tool calls */}}
-/>
-```
-
-**Credits:** Built by studying [MCPJam Inspector](https://github.com/MCPJam/inspector) and ChatGPT's widget source code.
-
-[Full Documentation](./packages/oai-preview/README.md)
 
 ---
 
@@ -342,12 +444,19 @@ npm test
 ```
 sdk/
 ├── packages/
-│   ├── oai-hooks/      # UI hooks
-│   ├── oai-server/     # Server toolkit
-│   ├── bundle/         # Bundling library
-│   ├── cli/            # CLI tools
-│   ├── mcp-express/    # Express utilities
-│   └── oai-preview/    # 🧪 Dev/testing tool
+│   ├── OpenAI Apps SDK:
+│   │   ├── oai-hooks/      # UI hooks for ChatGPT widgets
+│   │   ├── oai-server/     # Server toolkit for MCP with widgets
+│   │   └── oai-preview/    # 🧪 Dev/testing tool
+│   ├── MCP-UI:
+│   │   ├── shared-ui/      # RPC layer for iframe communication
+│   │   ├── mcp-ui-messenger/ # MCP-UI compatible messenger
+│   │   └── mcp-ui-hooks/   # React hooks for MCP-UI
+│   ├── Bundling:
+│   │   ├── bundle/         # Bundling library
+│   │   └── cli/            # CLI tools
+│   └── Server Utilities:
+│       └── mcp-express/    # Express utilities
 └── apps/
     └── examples/       # Example applications
 ```
@@ -377,16 +486,23 @@ Apache License, Version 2.0
 
 ## Resources
 
+### OpenAI Apps SDK
 - [OpenAI Apps SDK Documentation](https://developers.openai.com/apps-sdk/)
-- [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 - [OpenAI Apps SDK Examples](https://github.com/openai/openai-apps-sdk-examples)
+
+### MCP & MCP-UI
+- [MCP-UI Embeddable UI Protocol](https://mcpui.dev/guide/embeddable-ui)
+
+### Other resources
+- [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 - [Fractal MCP](https://fractalmcp.com/)
 
 ## Credits
 
-This SDK is built on the foundation of OpenAI's Apps SDK examples and makes them easily accessible as reusable npm packages. Special thanks to:
+This SDK provides tools for embedding UIs in chat applications, supporting multiple protocols and frameworks. Special thanks to:
 
 - **OpenAI** for pioneering the Apps SDK and widget approach to building interactive AI applications
+- **[MCP-UI](https://mcpui.dev/)** for creating the embeddable UI protocol specification
 - **[MCPJam Inspector](https://github.com/MCPJam/inspector)** for their excellent open-source MCP testing platform, which helped inform our development tooling
 - The **MCP community** for building an ecosystem of tools and servers
 

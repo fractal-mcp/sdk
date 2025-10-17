@@ -1,0 +1,47 @@
+{
+  "name": "@fractal-mcp/mcp-ui-hooks",
+  "version": "1.0.0",
+  "description": "React hooks for MCP-UI cross-iframe messaging",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fractal-mcp/sdk.git",
+    "directory": "packages/mcp-ui-hooks"
+  },
+  "homepage": "https://github.com/fractal-mcp/sdk/tree/main/packages/mcp-ui-hooks/README.md",
+  "bugs": {
+    "url": "https://github.com/fractal-mcp/sdk/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "echo 'no tests'"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "dependencies": {
+    "@fractal-mcp/mcp-ui-messenger": "*"
+  },
+  "peerDependencies": {
+    "react": ">=17 || >=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  }
+}
+
+
