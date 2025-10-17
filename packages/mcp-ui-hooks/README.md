@@ -90,15 +90,15 @@ function TaskCreator() {
 }
 ```
 
-### Request with Response
+### Request with Response (Basic)
 
 ```typescript
 function WeatherWidget() {
-  const { emitTool } = useUIMessenger();
+  const { requestTool } = useUIMessenger();
   const [weather, setWeather] = useState(null);
 
   const getWeather = async () => {
-    const req = await emitTool({ 
+    const req = await requestTool({ 
       toolName: 'get-weather',
       params: { city: 'Tokyo' }
     });
@@ -115,6 +115,59 @@ function WeatherWidget() {
   );
 }
 ```
+
+### Request with Response (Advanced: Tracking State)
+
+Track the request lifecycle to show loading states:
+
+```typescript
+function WeatherWidget() {
+  const { requestTool } = useUIMessenger();
+  const [status, setStatus] = useState('idle');
+  const [weather, setWeather] = useState(null);
+
+  const getWeather = async () => {
+    setStatus('sending');
+    
+    const req = await requestTool({ 
+      toolName: 'get-weather',
+      params: { city: 'Tokyo' }
+    });
+
+    // Wait for acknowledgment from host
+    req.received().then(() => {
+      setStatus('processing'); // Host acknowledged, now processing
+    });
+
+    // Wait for the final response
+    try {
+      const result = await req.response();
+      setStatus('success');
+      setWeather(result);
+    } catch (error) {
+      setStatus('error');
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={getWeather} disabled={status !== 'idle' && status !== 'success' && status !== 'error'}>
+        Get Weather
+      </button>
+      {status === 'sending' && <p>Sending request...</p>}
+      {status === 'processing' && <p>Host is processing...</p>}
+      {status === 'success' && <p>Weather: {JSON.stringify(weather)}</p>}
+      {status === 'error' && <p>Failed to get weather</p>}
+    </div>
+  );
+}
+```
+
+The `RpcRequest` object provides:
+- **`received()`**: Promise that resolves when host sends `ui-message-received` (acknowledgment)
+- **`response()`**: Promise that resolves when host sends `ui-message-response` (final result)
+
+See the [mcp-ui-messenger automatic behaviors documentation](../mcp-ui-messenger/README.md#automatic-behaviors) for more details.
 
 ### Notify Host of State Changes
 
@@ -255,6 +308,15 @@ interface RequestDataPayload {
 2. Automatically handles iframe lifecycle (ready event, render data)
 3. Provides ready state and render data via hook return
 4. All messaging functions wait for initialization before sending
+
+### Automatic Message Handling
+
+The underlying messenger automatically handles MCP-UI protocol details for you:
+
+- **Size changes**: Automatically reported to the host via `ui-size-change` events
+- **Request tracking**: `request*` methods automatically handle `ui-message-received` and `ui-message-response` events using message IDs
+
+For more details, see the [mcp-ui-messenger automatic behaviors documentation](../mcp-ui-messenger/README.md#automatic-behaviors).
 
 ## Advanced: Init Before React
 

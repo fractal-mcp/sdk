@@ -189,6 +189,97 @@ function App() {
 4. **Messages**: Send intents, notifications, prompts, tool calls, and custom requests
 5. **Tracking**: Use `request*` methods for response tracking via message IDs
 
+## Automatic Behaviors
+
+### Size Change Events
+
+The messenger **automatically handles `ui-size-change` events** for you. When you initialize with a `rootElId`, a `ResizeObserver` watches that element and sends size updates to the host whenever dimensions change. You don't need to manually send these events.
+
+```typescript
+const messenger = await initUIMessenger({ rootElId: 'root' });
+// Size changes are automatically reported to the host!
+```
+
+### Request Response Tracking
+
+When you use `request*` methods (e.g., `requestIntent`, `requestTool`), you receive an `RpcRequest` object that **automatically handles `ui-message-received` and `ui-message-response` events** behind the scenes.
+
+The `RpcRequest` object provides:
+- **`response()` method**: Returns a Promise that resolves when the host sends `ui-message-response`
+- **Automatic correlation**: Message IDs are tracked internally, you don't need to handle them
+
+**Basic Example:**
+```typescript
+// Send a tool request and wait for response
+const req = messenger.requestTool({ 
+  toolName: 'get-weather', 
+  params: { city: 'Tokyo' } 
+});
+
+// The RpcRequest automatically listens for ui-message-received 
+// and ui-message-response events
+const result = await req.response();
+console.log('Weather data:', result);
+```
+
+**Advanced: Tracking Request State**
+
+The `RpcRequest` object provides `received()` and `response()` methods if you need to track the request lifecycle (e.g., show loading states):
+
+```typescript
+import { useState } from 'react';
+import { initUIMessenger } from '@fractal-mcp/mcp-ui-messenger';
+
+function WeatherWidget({ messenger }) {
+  const [status, setStatus] = useState('idle');
+  const [weather, setWeather] = useState(null);
+
+  const fetchWeather = async () => {
+    setStatus('sending');
+    
+    const req = messenger.requestTool({ 
+      toolName: 'get-weather',
+      params: { city: 'Tokyo' }
+    });
+
+    // Wait for acknowledgment from host
+    req.received().then(() => {
+      setStatus('processing'); // Host acknowledged, now processing
+    });
+
+    // Wait for the final response
+    try {
+      const result = await req.response();
+      setStatus('success');
+      setWeather(result);
+    } catch (error) {
+      setStatus('error');
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchWeather}>Get Weather</button>
+      {status === 'sending' && <p>Sending request...</p>}
+      {status === 'processing' && <p>Host is processing...</p>}
+      {status === 'success' && <p>Weather: {JSON.stringify(weather)}</p>}
+      {status === 'error' && <p>Failed to get weather</p>}
+    </div>
+  );
+}
+```
+
+**How it works under the hood:**
+
+The messenger:
+1. Generates a unique `messageId` for your request
+2. Sends the message to the host with that ID
+3. Listens for `ui-message-received` (resolves `received()` Promise)
+4. Listens for `ui-message-response` (resolves `response()` Promise)
+5. Handles message correlation automatically
+
+You don't need to worry about message IDs or manual event handlers - it's all handled for you!
+
 ## Protocol Reference
 
 See [MCP-UI Embeddable UI Protocol](https://mcpui.dev/guide/embeddable-ui) for full specification.
