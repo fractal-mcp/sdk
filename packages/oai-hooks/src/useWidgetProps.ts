@@ -1,9 +1,9 @@
-import { useWebplusGlobal } from "./useWebplusGlobal";
+import { useOpenAiGlobal } from "./useOpenAIGlobal";
 
 export function useWidgetProps<T extends Record<string, unknown>>(
   defaultState?: T | (() => T)
 ): T {
-  const props = useWebplusGlobal("toolOutput") as T;
+  const props = useOpenAiGlobal("toolOutput") as T;
 
   const fallback =
     typeof defaultState === "function"

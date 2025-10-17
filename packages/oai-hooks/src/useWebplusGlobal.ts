@@ -8,7 +8,10 @@ import {
 function createFallbackWebplus(): Window["webplus"] {
   const fallback: Partial<Window["webplus"]> = {
     theme: "light",
-    userAgent: {},
+    userAgent: { 
+      device: { type: "desktop" }, 
+      capabilities: { hover: true, touch: false }
+    },
     maxHeight: Number.POSITIVE_INFINITY,
     displayMode: "inline",
     safeArea: { insets: { top: 0, bottom: 0, left: 0, right: 0 } },
@@ -66,7 +69,11 @@ function ensureWebplus(): Window["webplus"] {
     window.webplus = fallbackInstance;
   }
 
-  window.openai = window.openai ?? window.webplus;
+  // Create a compatible openai object that mirrors the official API
+  window.openai = window.openai ?? {
+    ...window.webplus,
+    locale: "en-US", // Add missing locale field
+  };
   return window.webplus;
 }
 

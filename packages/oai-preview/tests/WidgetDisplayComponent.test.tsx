@@ -11,6 +11,7 @@ async function renderComponentInBrowser(props: {
   htmlSnippet: string;
   toolInput?: Record<string, any>;
   toolOutput?: any;
+  toolResponseMetadata?: any;
   toolId?: string;
 }): Promise<{ browser: Browser; page: Page }> {
   const browser = await chromium.launch({ headless: true });
@@ -200,27 +201,47 @@ describe('WidgetDisplayComponent', () => {
         <h2>Data Access Test</h2>
         <div id="tool-input"></div>
         <div id="tool-output"></div>
+        <div id="tool-response-metadata"></div>
         <div id="display-mode"></div>
         <div id="theme"></div>
         <div id="max-height"></div>
+        <div id="locale"></div>
+        <div id="safe-area"></div>
+        <div id="user-agent"></div>
+        <div id="widget-state"></div>
         <script>
           // Access and render the data
           const toolInput = window.openai.toolInput;
           const toolOutput = window.openai.toolOutput;
+          const toolResponseMetadata = window.openai.toolResponseMetadata;
           const displayMode = window.openai.displayMode;
           const theme = window.openai.theme;
           const maxHeight = window.openai.maxHeight;
+          const locale = window.openai.locale;
+          const safeArea = window.openai.safeArea;
+          const userAgent = window.openai.userAgent;
+          const widgetState = window.openai.widgetState;
 
           document.getElementById('tool-input').textContent = 
             'Tool Input: ' + JSON.stringify(toolInput);
           document.getElementById('tool-output').textContent = 
             'Tool Output: ' + JSON.stringify(toolOutput);
+          document.getElementById('tool-response-metadata').textContent = 
+            'Tool Response Metadata: ' + JSON.stringify(toolResponseMetadata);
           document.getElementById('display-mode').textContent = 
             'Display Mode: ' + displayMode;
           document.getElementById('theme').textContent = 
             'Theme: ' + theme;
           document.getElementById('max-height').textContent = 
             'Max Height: ' + maxHeight;
+          document.getElementById('locale').textContent = 
+            'Locale: ' + locale;
+          document.getElementById('safe-area').textContent = 
+            'Safe Area: ' + JSON.stringify(safeArea);
+          document.getElementById('user-agent').textContent = 
+            'User Agent: ' + JSON.stringify(userAgent);
+          document.getElementById('widget-state').textContent = 
+            'Widget State: ' + JSON.stringify(widgetState);
         </script>
       </div>
     `;
@@ -237,10 +258,17 @@ describe('WidgetDisplayComponent', () => {
       forecast: ['Clear', 'Cloudy', 'Sunny']
     };
 
+    const testToolResponseMetadata = {
+      executionTime: 250,
+      source: 'weather-api',
+      cached: false
+    };
+
     const { browser, page } = await renderComponentInBrowser({
       htmlSnippet: dataAccessHtml,
       toolInput: testToolInput,
       toolOutput: testToolOutput,
+      toolResponseMetadata: testToolResponseMetadata,
       toolId: 'data-test-widget'
     });
 
@@ -263,15 +291,42 @@ describe('WidgetDisplayComponent', () => {
       expect(toolOutputText).toContain('72');
       expect(toolOutputText).toContain('Sunny');
 
+      // Verify toolResponseMetadata is accessible and rendered
+      const toolResponseMetadataText = await iframe.locator('#tool-response-metadata').textContent();
+      expect(toolResponseMetadataText).toContain('Tool Response Metadata:');
+      expect(toolResponseMetadataText).toContain('250');
+      expect(toolResponseMetadataText).toContain('weather-api');
+      expect(toolResponseMetadataText).toContain('false');
+
       // Verify global properties
       const displayModeText = await iframe.locator('#display-mode').textContent();
       expect(displayModeText).toBe('Display Mode: inline');
 
       const themeText = await iframe.locator('#theme').textContent();
-      expect(themeText).toBe('Theme: dark');
+      expect(themeText).toBe('Theme: light');
 
       const maxHeightText = await iframe.locator('#max-height').textContent();
       expect(maxHeightText).toBe('Max Height: 600');
+
+      // Verify additional global properties
+      const localeText = await iframe.locator('#locale').textContent();
+      expect(localeText).toBe('Locale: en-US');
+
+      const safeAreaText = await iframe.locator('#safe-area').textContent();
+      expect(safeAreaText).toContain('Safe Area:');
+      expect(safeAreaText).toContain('top');
+      expect(safeAreaText).toContain('bottom');
+      expect(safeAreaText).toContain('left');
+      expect(safeAreaText).toContain('right');
+
+      const userAgentText = await iframe.locator('#user-agent').textContent();
+      expect(userAgentText).toContain('User Agent:');
+      expect(userAgentText).toContain('desktop');
+      expect(userAgentText).toContain('hover');
+      expect(userAgentText).toContain('touch');
+
+      const widgetStateText = await iframe.locator('#widget-state').textContent();
+      expect(widgetStateText).toBe('Widget State: null');
 
     } finally {
       await page.close();

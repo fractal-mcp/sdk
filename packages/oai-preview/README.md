@@ -29,9 +29,20 @@ function WidgetPreview() {
       htmlSnippet={htmlSnippet}
       toolInput={{ name: "World" }}
       toolOutput={{ greeting: "Hello, World!" }}
+      theme="dark"
+      displayMode="inline"
+      maxHeight={800}
       onToolCall={async (toolName, params) => {
         console.log("Tool called:", toolName, params);
         return { success: true };
+      }}
+      onOpenExternal={(href) => {
+        console.log("Opening external URL:", href);
+        // Custom handling - could show modal, log analytics, etc.
+        window.open(href, '_blank');
+      }}
+      onRequestDisplayMode={(mode) => {
+        console.log("Display mode requested:", mode);
       }}
     />
   );
@@ -49,7 +60,15 @@ function WidgetPreview() {
 | `onToolCall` | `(name, params) => Promise<any>` | No | Called when widget calls `window.openai.callTool()` |
 | `onSendFollowup` | `(message) => void` | No | Called when widget calls `window.openai.sendFollowupTurn()` |
 | `onSetWidgetState` | `(state) => void` | No | Called when widget calls `window.openai.setWidgetState()` |
+| `onRequestDisplayMode` | `(mode) => void` | No | Called when widget calls `window.openai.requestDisplayMode()` |
+| `onOpenExternal` | `(href) => void` | No | Called when widget calls `window.openai.openExternal()` |
 | `className` | `string` | No | CSS class for container |
+| `displayMode` | `DisplayMode` | No | Display mode: "inline", "pip", "fullscreen" (default: "inline") |
+| `maxHeight` | `number` | No | Maximum height constraint in pixels (default: 600) |
+| `theme` | `Theme` | No | Theme: "light" or "dark" (default: "light") |
+| `locale` | `string` | No | Locale string (default: "en-US") |
+| `safeArea` | `SafeArea` | No | Safe area insets for mobile (default: zero insets) |
+| `userAgent` | `UserAgent` | No | Device and capability info (default: desktop with hover) |
 
 ## What It Does
 

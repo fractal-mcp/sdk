@@ -13,7 +13,10 @@
     "resolveJsonModule": true,
     "lib": ["ES2020", "DOM"],
     "jsx": "react-jsx",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@fractal-mcp/oai-types": ["../oai-types/dist/index"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
