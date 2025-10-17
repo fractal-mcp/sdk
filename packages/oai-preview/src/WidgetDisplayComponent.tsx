@@ -4,6 +4,7 @@ export interface WidgetPreviewComponentProps {
   htmlSnippet: string;
   toolInput?: Record<string, any>;
   toolOutput?: any;
+  toolResponseMetadata?: any;
   toolId?: string;
   onToolCall?: (toolName: string, params: Record<string, any>) => Promise<any>;
   onSendFollowup?: (message: string) => void;
@@ -20,6 +21,7 @@ export interface WidgetPreviewComponentProps {
  * @param toolOutput - The output of the tool.
  * @param toolId - The id of the tool.
  * @param onToolCall - The callback to call the tool.
+ * @param toolResponseMetadata - The response metadata from the tool.
  * @param onSendFollowup - The callback to send a followup message.
  * @param onSetWidgetState - The callback to set the widget state.
  * @param className - The class name to apply to the component.
@@ -28,8 +30,9 @@ export function WidgetPreviewComponent({
   htmlSnippet,
   toolInput = {},
   toolOutput = null,
+  toolResponseMetadata = null,
   toolId = `preview-${Date.now()}`,
-  onToolCall,   
+  onToolCall,
   onSendFollowup,
   onSetWidgetState,
   className = "",
@@ -37,6 +40,7 @@ export function WidgetPreviewComponent({
   console.log("[WidgetPreviewComponent] Rendering with:", {
     toolInput,
     toolOutput,
+    toolResponseMetadata,
     toolId,
     className,
   });
@@ -62,6 +66,7 @@ export function WidgetPreviewComponent({
           const openaiAPI = {
             toolInput: ${JSON.stringify(toolInput)},
             toolOutput: ${JSON.stringify(toolOutput)},
+            toolResponseMetadata: ${JSON.stringify(toolResponseMetadata)},
             displayMode: 'inline',
             maxHeight: 600,
             theme: 'dark',
@@ -73,7 +78,9 @@ export function WidgetPreviewComponent({
             async setWidgetState(state) {
               this.widgetState = state;
               try {
-                localStorage.setItem(${JSON.stringify(widgetStateKey)}, JSON.stringify(state));
+                localStorage.setItem(${JSON.stringify(
+                  widgetStateKey
+                )}, JSON.stringify(state));
               } catch (err) {
                 console.error('[OpenAI Widget] Failed to save widget state:', err);
               }
@@ -168,6 +175,7 @@ export function WidgetPreviewComponent({
                     userAgent: openaiAPI.userAgent,
                     toolInput: openaiAPI.toolInput,
                     toolOutput: openaiAPI.toolOutput,
+                    toolResponseMetadata: openaiAPI.toolResponseMetadata,
                     widgetState: openaiAPI.widgetState,
                     setWidgetState: openaiAPI.setWidgetState
                   }
@@ -186,7 +194,8 @@ export function WidgetPreviewComponent({
                 detail: {
                   globals: {
                     toolInput: openaiAPI.toolInput,
-                    toolOutput: openaiAPI.toolOutput
+                    toolOutput: openaiAPI.toolOutput,
+                    toolResponseMetadata: openaiAPI.toolResponseMetadata,
                   }
                 }
               });
@@ -199,7 +208,9 @@ export function WidgetPreviewComponent({
           // Restore widget state from localStorage
           setTimeout(() => {
             try {
-              const stored = localStorage.getItem(${JSON.stringify(widgetStateKey)});
+              const stored = localStorage.getItem(${JSON.stringify(
+                widgetStateKey
+              )});
               if (stored && window.openai) {
                 window.openai.widgetState = JSON.parse(stored);
               }
@@ -215,7 +226,7 @@ export function WidgetPreviewComponent({
   // Generate full HTML document with API script and snippet
   const generateFullHtml = () => {
     const apiScript = generateApiScript();
-    
+
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -258,11 +269,16 @@ export function WidgetPreviewComponent({
       switch (event.data.type) {
         case "openai:setWidgetState":
           console.log("[Preview] setWidgetState:", event.data.state);
-          addLog(`setWidgetState: ${JSON.stringify(event.data.state).substring(0, 60)}...`);
+          addLog(
+            `setWidgetState: ${JSON.stringify(event.data.state).substring(
+              0,
+              60
+            )}...`
+          );
           try {
             localStorage.setItem(
               widgetStateKey,
-              JSON.stringify(event.data.state),
+              JSON.stringify(event.data.state)
             );
           } catch (err) {
             console.error("[Preview] Failed to save widget state:", err);
@@ -270,13 +286,17 @@ export function WidgetPreviewComponent({
           break;
 
         case "openai:callTool":
-          console.log("[Preview] callTool:", event.data.toolName, event.data.params);
+          console.log(
+            "[Preview] callTool:",
+            event.data.toolName,
+            event.data.params
+          );
           addLog(`callTool: ${event.data.toolName}`);
           if (onToolCall) {
             try {
               const result = await onToolCall(
                 event.data.toolName,
-                event.data.params || {},
+                event.data.params || {}
               );
               console.log("[Preview] callTool result:", result);
               addLog(`↳ tool "${event.data.toolName}" succeeded`);
@@ -286,7 +306,7 @@ export function WidgetPreviewComponent({
                   requestId: event.data.requestId,
                   result: result,
                 },
-                "*",
+                "*"
               );
             } catch (err) {
               console.error("[Preview] callTool error:", err);
@@ -297,7 +317,7 @@ export function WidgetPreviewComponent({
                   requestId: event.data.requestId,
                   error: err instanceof Error ? err.message : "Unknown error",
                 },
-                "*",
+                "*"
               );
             }
           }
@@ -350,17 +370,13 @@ export function WidgetPreviewComponent({
     <div className={className}>
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-2">
-          <p className="text-sm text-red-600">
-            Failed to load widget: {error}
-          </p>
+          <p className="text-sm text-red-600">Failed to load widget: {error}</p>
         </div>
       )}
 
       {!isReady && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
-          <p className="text-sm text-blue-600">
-            Loading widget...
-          </p>
+          <p className="text-sm text-blue-600">Loading widget...</p>
         </div>
       )}
 
