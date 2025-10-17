@@ -11,6 +11,7 @@ async function renderComponentInBrowser(props: {
   htmlSnippet: string;
   toolInput?: Record<string, any>;
   toolOutput?: any;
+  toolResponseMetadata?: any;
   toolId?: string;
 }): Promise<{ browser: Browser; page: Page }> {
   const browser = await chromium.launch({ headless: true });
@@ -200,6 +201,7 @@ describe('WidgetDisplayComponent', () => {
         <h2>Data Access Test</h2>
         <div id="tool-input"></div>
         <div id="tool-output"></div>
+        <div id="tool-response-metadata"></div>
         <div id="display-mode"></div>
         <div id="theme"></div>
         <div id="max-height"></div>
@@ -207,6 +209,7 @@ describe('WidgetDisplayComponent', () => {
           // Access and render the data
           const toolInput = window.openai.toolInput;
           const toolOutput = window.openai.toolOutput;
+          const toolResponseMetadata = window.openai.toolResponseMetadata;
           const displayMode = window.openai.displayMode;
           const theme = window.openai.theme;
           const maxHeight = window.openai.maxHeight;
@@ -215,6 +218,8 @@ describe('WidgetDisplayComponent', () => {
             'Tool Input: ' + JSON.stringify(toolInput);
           document.getElementById('tool-output').textContent = 
             'Tool Output: ' + JSON.stringify(toolOutput);
+          document.getElementById('tool-response-metadata').textContent = 
+            'Tool Response Metadata: ' + JSON.stringify(toolResponseMetadata);
           document.getElementById('display-mode').textContent = 
             'Display Mode: ' + displayMode;
           document.getElementById('theme').textContent = 
@@ -237,10 +242,17 @@ describe('WidgetDisplayComponent', () => {
       forecast: ['Clear', 'Cloudy', 'Sunny']
     };
 
+    const testToolResponseMetadata = {
+      responseTime: 250,
+      source: 'weather-api',
+      version: '2.1'
+    };
+
     const { browser, page } = await renderComponentInBrowser({
       htmlSnippet: dataAccessHtml,
       toolInput: testToolInput,
       toolOutput: testToolOutput,
+      toolResponseMetadata: testToolResponseMetadata,
       toolId: 'data-test-widget'
     });
 
@@ -262,6 +274,13 @@ describe('WidgetDisplayComponent', () => {
       expect(toolOutputText).toContain('Tool Output:');
       expect(toolOutputText).toContain('72');
       expect(toolOutputText).toContain('Sunny');
+
+      // Verify toolResponseMetadata is accessible and rendered
+      const toolResponseMetadataText = await iframe.locator('#tool-response-metadata').textContent();
+      expect(toolResponseMetadataText).toContain('Tool Response Metadata:');
+      expect(toolResponseMetadataText).toContain('250');
+      expect(toolResponseMetadataText).toContain('weather-api');
+      expect(toolResponseMetadataText).toContain('2.1');
 
       // Verify global properties
       const displayModeText = await iframe.locator('#display-mode').textContent();
