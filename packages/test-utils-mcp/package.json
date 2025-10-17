@@ -19,7 +19,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "test": "node --experimental-vm-modules --no-warnings ../../node_modules/jest/bin/jest.js"
   },
   "files": [
