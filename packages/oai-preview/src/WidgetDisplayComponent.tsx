@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { 
+  DisplayMode, 
+  Theme, 
+  SafeArea, 
+  UserAgent 
+} from "@fractal-mcp/oai-types";
 
 export interface WidgetPreviewComponentProps {
   htmlSnippet: string;
@@ -9,7 +15,17 @@ export interface WidgetPreviewComponentProps {
   onToolCall?: (toolName: string, params: Record<string, any>) => Promise<any>;
   onSendFollowup?: (message: string) => void;
   onSetWidgetState?: (state: any) => void;
+  onOpenExternal?: (href: string) => void;
+  onRequestDisplayMode?: (mode: DisplayMode) => void;
   className?: string;
+  
+  // Configurable globals
+  displayMode?: DisplayMode;
+  maxHeight?: number;
+  theme?: Theme;
+  locale?: string;
+  safeArea?: SafeArea;
+  userAgent?: UserAgent;
 }
 
 /**
@@ -24,7 +40,15 @@ export interface WidgetPreviewComponentProps {
  * @param toolResponseMetadata - The response metadata from the tool.
  * @param onSendFollowup - The callback to send a followup message.
  * @param onSetWidgetState - The callback to set the widget state.
+ * @param onRequestDisplayMode - The callback for display mode change requests.
+ * @param onOpenExternal - The callback to handle external URL navigation.
  * @param className - The class name to apply to the component.
+ * @param displayMode - The display mode (inline, pip, fullscreen). Defaults to "inline".
+ * @param maxHeight - The maximum height constraint in pixels. Defaults to 600.
+ * @param theme - The theme (light or dark). Defaults to "light".
+ * @param locale - The locale string. Defaults to "en-US".
+ * @param safeArea - The safe area insets for mobile. Defaults to zero insets.
+ * @param userAgent - The user agent info including device and capabilities.
  */
 export function WidgetPreviewComponent({
   htmlSnippet,
@@ -35,15 +59,22 @@ export function WidgetPreviewComponent({
   onToolCall,
   onSendFollowup,
   onSetWidgetState,
+  onRequestDisplayMode,
+  onOpenExternal,
   className = "",
+  
+  // Configurable globals with sensible defaults
+  displayMode = "inline",
+  maxHeight = 600,
+  theme = "light",
+  locale = "en-US",
+  safeArea = { insets: { top: 0, bottom: 0, left: 0, right: 0 } },
+  userAgent = { 
+    device: { type: "desktop" }, 
+    capabilities: { hover: true, touch: false }
+  },
 }: WidgetPreviewComponentProps) {
-  console.log("[WidgetPreviewComponent] Rendering with:", {
-    toolInput,
-    toolOutput,
-    toolResponseMetadata,
-    toolId,
-    className,
-  });
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,12 +98,12 @@ export function WidgetPreviewComponent({
             toolInput: ${JSON.stringify(toolInput)},
             toolOutput: ${JSON.stringify(toolOutput)},
             toolResponseMetadata: ${JSON.stringify(toolResponseMetadata)},
-            displayMode: 'inline',
-            maxHeight: 600,
-            theme: 'dark',
-            locale: 'en-US',
-            safeArea: { insets: { top: 0, bottom: 0, left: 0, right: 0 } },
-            userAgent: {},
+            displayMode: ${JSON.stringify(displayMode)},
+            maxHeight: ${maxHeight},
+            theme: ${JSON.stringify(theme)},
+            locale: ${JSON.stringify(locale)},
+            safeArea: ${JSON.stringify(safeArea)},
+            userAgent: ${JSON.stringify(userAgent)},
             widgetState: null,
 
             async setWidgetState(state) {
@@ -142,6 +173,17 @@ export function WidgetPreviewComponent({
             async sendFollowUpMessage(args) {
               const prompt = typeof args === 'string' ? args : (args?.prompt || '');
               return this.sendFollowupTurn(prompt);
+            },
+
+            openExternal(payload) {
+              if (payload?.href) {
+                window.parent.postMessage({
+                  type: 'openai:openExternal',
+                  href: payload.href
+                }, '*');
+                // In a real browser environment, this would open the URL
+                window.open(payload.href, '_blank');
+              }
             }
           };
 
@@ -161,36 +203,54 @@ export function WidgetPreviewComponent({
             enumerable: true
           });
 
-          // Dispatch webplus:set_globals event
+          // Dispatch events for both legacy (webplus) and official (openai) APIs
           setTimeout(() => {
             try {
-              const globalsEvent = new CustomEvent('webplus:set_globals', {
+              // Legacy webplus event
+              const webplusGlobalsEvent = new CustomEvent('webplus:set_globals', {
                 detail: {
                   globals: {
+                    theme: openaiAPI.theme,
                     displayMode: openaiAPI.displayMode,
                     maxHeight: openaiAPI.maxHeight,
-                    theme: openaiAPI.theme,
-                    locale: openaiAPI.locale,
                     safeArea: openaiAPI.safeArea,
                     userAgent: openaiAPI.userAgent,
                     toolInput: openaiAPI.toolInput,
                     toolOutput: openaiAPI.toolOutput,
-                    toolResponseMetadata: openaiAPI.toolResponseMetadata,
-                    widgetState: openaiAPI.widgetState,
-                    setWidgetState: openaiAPI.setWidgetState
+                    widgetState: openaiAPI.widgetState
                   }
                 }
               });
-              window.dispatchEvent(globalsEvent);
+              window.dispatchEvent(webplusGlobalsEvent);
+
+              // Official OpenAI Apps SDK event
+              const openaiGlobalsEvent = new CustomEvent('openai:set_globals', {
+                detail: {
+                  globals: {
+                    theme: openaiAPI.theme,
+                    userAgent: openaiAPI.userAgent,
+                    locale: openaiAPI.locale,
+                    maxHeight: openaiAPI.maxHeight,
+                    displayMode: openaiAPI.displayMode,
+                    safeArea: openaiAPI.safeArea,
+                    toolInput: openaiAPI.toolInput,
+                    toolOutput: openaiAPI.toolOutput,
+                    toolResponseMetadata: openaiAPI.toolResponseMetadata,
+                    widgetState: openaiAPI.widgetState
+                  }
+                }
+              });
+              window.dispatchEvent(openaiGlobalsEvent);
             } catch (err) {
               console.error('[OpenAI Widget] Failed to dispatch globals event:', err);
             }
           }, 0);
 
-          // Dispatch update event when toolInput or toolOutput changes
+          // Dispatch update events when toolInput or toolOutput changes
           setTimeout(() => {
             try {
-              const globalsEvent = new CustomEvent('webplus:set_globals', {
+              // Legacy webplus update event
+              const webplusUpdateEvent = new CustomEvent('webplus:set_globals', {
                 detail: {
                   globals: {
                     toolInput: openaiAPI.toolInput,
@@ -199,7 +259,19 @@ export function WidgetPreviewComponent({
                   }
                 }
               });
-              window.dispatchEvent(globalsEvent);
+              window.dispatchEvent(webplusUpdateEvent);
+
+              // Official OpenAI Apps SDK update event
+              const openaiUpdateEvent = new CustomEvent('openai:set_globals', {
+                detail: {
+                  globals: {
+                    toolInput: openaiAPI.toolInput,
+                    toolOutput: openaiAPI.toolOutput,
+                    toolResponseMetadata: openaiAPI.toolResponseMetadata,
+                  }
+                }
+              });
+              window.dispatchEvent(openaiUpdateEvent);
             } catch (err) {
               console.error('[OpenAI Widget] Failed to dispatch update event:', err);
             }
@@ -283,6 +355,9 @@ export function WidgetPreviewComponent({
           } catch (err) {
             console.error("[Preview] Failed to save widget state:", err);
           }
+          if (onSetWidgetState) {
+            onSetWidgetState(event.data.state);
+          }
           break;
 
         case "openai:callTool":
@@ -334,7 +409,21 @@ export function WidgetPreviewComponent({
         case "openai:requestDisplayMode":
           console.log("[Preview] requestDisplayMode:", event.data.mode);
           addLog(`requestDisplayMode: ${event.data.mode}`);
+          if (onRequestDisplayMode) {
+            onRequestDisplayMode(event.data.mode);
+          }
           // Handle display mode requests if needed
+          break;
+
+        case "openai:openExternal":
+          console.log("[Preview] openExternal:", event.data.href);
+          addLog(`openExternal: ${event.data.href}`);
+          if (onOpenExternal) {
+            onOpenExternal(event.data.href);
+          } else if (event.data.href) {
+            // Default behavior: open in new tab
+            window.open(event.data.href, '_blank');
+          }
           break;
 
         default:
@@ -364,7 +453,7 @@ export function WidgetPreviewComponent({
       iframe?.removeEventListener("load", handleLoad);
       iframe?.removeEventListener("error", handleError as any);
     };
-  }, [widgetStateKey, onToolCall, onSendFollowup]);
+  }, [widgetStateKey, onToolCall, onSendFollowup, onSetWidgetState, onOpenExternal, onRequestDisplayMode, displayMode, maxHeight, theme, locale, safeArea, userAgent]);
 
   return (
     <div className={className}>

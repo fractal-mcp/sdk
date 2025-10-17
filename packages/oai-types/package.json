@@ -1,7 +1,7 @@
 {
-  "name": "@fractal-mcp/oai-hooks",
+  "name": "@fractal-mcp/oai-types",
   "version": "1.0.0",
-  "description": "React hooks for building OpenAI Apps SDK compatible widget UIs",
+  "description": "TypeScript types for OpenAI Apps SDK compatible components",
   "repository": {
     "type": "git",
     "url": "https://github.com/fractal-mcp/sdk.git"
@@ -21,23 +21,14 @@
     "clean": "rm -rf dist",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "echo 'no tests'",
-    "release": "npm view \"$npm_package_name@$npm_package_version\" version >/dev/null 2>&1 && echo \"Skipping publish: $npm_package_name@$npm_package_version exists\" || npm publish --access public"
+    "test": "echo 'no tests'"
   },
   "files": [
     "dist",
     "src"
   ],
-  "dependencies": {
-    "@fractal-mcp/oai-types": "^1.0.0"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0"
-  },
   "devDependencies": {
-    "@types/react": "^18.0.0",
     "eslint": "^8.0.0",
     "typescript": "^5.0.0"
   }
 }
-

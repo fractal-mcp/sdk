@@ -23,16 +23,49 @@ This package is based on the reference hooks from [OpenAI's Apps SDK Examples](h
 npm install @fractal-mcp/oai-hooks
 ```
 
+## API Overview
+
+This package provides hooks based on the **official [OpenAI Apps SDK API](https://developers.openai.com/apps-sdk/build/custom-ux)**. All hooks use the `window.openai` global and the `openai:set_globals` event pattern from OpenAI's documentation.
+
+### Core Hooks
+
+| Hook | Description | Based on Official SDK |
+|------|-------------|----------------------|
+| `useOpenAiGlobal(key)` | Access any `window.openai` property reactively | ✅ Official pattern |
+| `useToolOutput()` | Get tool output data | ✅ `window.openai.toolOutput` |
+| `useToolInput()` | Get tool input arguments | ✅ `window.openai.toolInput` |
+| `useToolResponseMetadata()` | Get tool response metadata | ✅ `window.openai.toolResponseMetadata` |
+| `useTheme()` | Get current theme (light/dark) | ✅ `window.openai.theme` |
+| `useDisplayMode()` | Get display mode (inline/pip/fullscreen) | ✅ `window.openai.displayMode` |
+| `useMaxHeight()` | Get max height constraint | ✅ `window.openai.maxHeight` |
+| `useSafeArea()` | Get safe area insets (mobile) | ✅ `window.openai.safeArea` |
+| `useWidgetState()` | Manage persistent state | ✅ Uses `window.openai.setWidgetState` |
+
+### Legacy Hooks (Backward Compatibility)
+
+| Hook | Description | Status |
+|------|-------------|--------|
+| `useWebplusGlobal(key)` | Access legacy `window.webplus` | 🔄 Legacy (still works) |
+| `useWidgetProps()` | Legacy alias for `useToolOutput()` | 🔄 Legacy (still works) |
+
 ## Quick Start
 
 Here's a simple widget that displays props and manages state:
 
 ```tsx
-import { useWidgetProps, useWidgetState } from "@fractal-mcp/oai-hooks";
+import { 
+  useToolOutput, 
+  useWidgetState, 
+  useTheme,
+  useOpenAiGlobal 
+} from "@fractal-mcp/oai-hooks";
 
 function WeatherWidget() {
-  // Get props passed from the server (structuredContent)
-  const props = useWidgetProps<{ location: string; temp: number }>();
+  // Official OpenAI Apps SDK API - get tool output
+  const props = useToolOutput<{ location: string; temp: number }>();
+  
+  // Get current theme
+  const theme = useTheme();
   
   // Manage widget state (persisted across re-renders)
   const [state, setState] = useWidgetState({ unit: "fahrenheit" });
@@ -46,7 +79,7 @@ function WeatherWidget() {
     : props.temp;
 
   return (
-    <div>
+    <div className={`widget ${theme}`}>
       <h2>Weather in {props.location}</h2>
       <p>{displayTemp}°{state.unit === "celsius" ? "C" : "F"}</p>
       <button onClick={toggleUnit}>Toggle Unit</button>
