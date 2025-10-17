@@ -45,7 +45,11 @@ export function registerOpenAIWidget<TInputSchema extends z.ZodType>(
 ): void {
   console.log(`[registerOpenAIWidget] Registering widget: ${widget.id}`);
   const widgetMeta = getWidgetMeta(widget);
-  console.log(`[registerOpenAIWidget] Widget metadata:`, widgetMeta);
+  // Merge custom resourceMeta if provided
+  const finalMeta = widget.resourceMeta 
+    ? { ...widgetMeta, ...widget.resourceMeta }
+    : widgetMeta;
+  console.log(`[registerOpenAIWidget] Widget metadata:`, finalMeta);
 
   // Register the tool - pass handler directly, just add _meta to response
   console.log(`[registerOpenAIWidget] Registering tool: ${widget.id}`);
@@ -54,7 +58,7 @@ export function registerOpenAIWidget<TInputSchema extends z.ZodType>(
   const toolConfig: any = {
     title: widget.title,
     description: widget.description || widget.title,
-    _meta: widgetMeta
+    _meta: finalMeta
   };
   
   if (widget.inputSchema) {
@@ -86,7 +90,7 @@ export function registerOpenAIWidget<TInputSchema extends z.ZodType>(
         // Just add _meta to the response
         const response = {
           ...result,
-          _meta: widgetMeta
+          _meta: finalMeta
         };
         console.log(`[registerOpenAIWidget] Final response for ${widget.id}:`, response);
         return response;
@@ -106,7 +110,7 @@ export function registerOpenAIWidget<TInputSchema extends z.ZodType>(
       name: widget.title,
       description: widget.description || `${widget.title} widget markup`,
       mimeType: "text/html+skybridge",
-      _meta: widgetMeta
+      _meta: finalMeta
     },
     async () => {
       console.log(`[registerOpenAIWidget] Resource requested: ${widget.id}`);
@@ -116,7 +120,7 @@ export function registerOpenAIWidget<TInputSchema extends z.ZodType>(
             uri: widget.templateUri,
             mimeType: "text/html+skybridge",
             text: widget.html,
-            _meta: widgetMeta
+            _meta: finalMeta
           }
         ]
       };
@@ -135,7 +139,7 @@ export function registerOpenAIWidget<TInputSchema extends z.ZodType>(
       name: widget.title,
       description: widget.description || `${widget.title} widget markup`,
       mimeType: "text/html+skybridge",
-      _meta: widgetMeta
+      _meta: finalMeta
     },
     async () => {
       console.log(`[registerOpenAIWidget] Resource template requested: ${widget.id}-template`);
@@ -145,7 +149,7 @@ export function registerOpenAIWidget<TInputSchema extends z.ZodType>(
             uri: widget.templateUri,
             mimeType: "text/html+skybridge",
             text: widget.html,
-            _meta: widgetMeta
+            _meta: finalMeta
           }
         ]
       };

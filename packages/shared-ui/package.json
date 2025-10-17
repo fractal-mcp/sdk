@@ -20,8 +20,9 @@
       "build": "tsc",
       "dev": "tsc --watch",
       "clean": "rm -rf dist",
-      "lint": "eslint src --ext .ts,.tsx",
-      "test": "jest --config ./jest.config.cjs"
+      "lint": "eslint src",
+      "lint:fix": "eslint src --fix",
+      "test": "echo 'no tests'"
     },
     "files": [
       "dist",

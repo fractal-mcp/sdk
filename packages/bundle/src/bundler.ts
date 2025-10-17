@@ -29,15 +29,15 @@ async function bundleWithRoot(
   const tailwindConfigPath = join(root, 'tailwind.config.js');
   try {
     await access(postcssConfigPath);
-    console.log("✅ Found PostCSS config at:", postcssConfigPath);
+    console.log("Found PostCSS config at:", postcssConfigPath);
   } catch {
-    console.log("❌ No PostCSS config found at:", postcssConfigPath);
+    console.log("No PostCSS config found at:", postcssConfigPath);
   }
   try {
     await access(tailwindConfigPath);
-    console.log("✅ Found Tailwind config at:", tailwindConfigPath);
+    console.log("Found Tailwind config at:", tailwindConfigPath);
   } catch {
-    console.log("❌ No Tailwind config found at:", tailwindConfigPath);
+    console.log("No Tailwind config found at:", tailwindConfigPath);
   }
   
   try {
