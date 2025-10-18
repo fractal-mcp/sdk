@@ -74,6 +74,7 @@ jobs:
           ls -la packages/oai-hooks/dist/ || echo "oai-hooks dist not found"
           ls -la packages/oai-server/dist/ || echo "oai-server dist not found"
           ls -la packages/oai-preview/dist/ || echo "oai-preview dist not found"
+          ls -la packages/test-utils-mcp/dist/ || echo "test-utils-mcp dist not found"
 
       - name: Create Git tag
         run: |
@@ -107,6 +108,7 @@ jobs:
             "packages/oai-hooks"
             "packages/oai-server"
             "packages/oai-preview"
+            "packages/test-utils-mcp"
           )
 
           VERSION="${{ inputs.version }}"

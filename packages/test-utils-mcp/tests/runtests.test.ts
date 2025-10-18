@@ -4,8 +4,8 @@ import {
   createHelloMcpServer,
   createSessionMcpServer,
   runTestServer,
-  tesHelloMcpServerSessionOverSse,
-  tesHelloMcpServerSessionOverStreamableHttp,
+  testHelloMcpServerSessionOverSse,
+  testHelloMcpServerSessionOverStreamableHttp,
   testMcpServerCanHandleSSE,
   testMcpServerCanHandleStreamableHttp
 } from "../src/index.js";
@@ -34,7 +34,7 @@ describe("test-utils-mcp", () => {
   it("verifies SSE sessions", async () => {
     const server = await runTestServer(createSessionMcpServer);
     try {
-      await tesHelloMcpServerSessionOverSse(server.url);
+      await testHelloMcpServerSessionOverSse(server.url);
     } finally {
       await server.close();
     }
@@ -43,7 +43,7 @@ describe("test-utils-mcp", () => {
   it("verifies Streamable HTTP sessions", async () => {
     const server = await runTestServer(createSessionMcpServer);
     try {
-      await tesHelloMcpServerSessionOverStreamableHttp(server.url);
+      await testHelloMcpServerSessionOverStreamableHttp(server.url);
     } finally {
       await server.close();
     }
