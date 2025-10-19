@@ -3,7 +3,9 @@
 A comprehensive toolkit for embedding interactive UIs in chat applications. This monorepo provides everything you need to create rich, interactive widget applications using the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) and cross-iframe messaging.
 
 ## Getting Started
-Head to our [quickstart](./docs/quickstart.md) if you would like to skip straight to building!
+Head to our [OpenAI Apps SDK quickstart](./docs/quickstart.md) if you would like to skip straight to building!
+
+Want to understand how everything works first? Check out [How It Works](./docs/how-it-works.md).
 
 ## What is this?
 
