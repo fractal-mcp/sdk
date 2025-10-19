@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest", "node"],
+    "noEmit": true,
+    "rootDir": "../..",
+    "paths": {
+      "@fractal-mcp/test-utils-mcp": ["../test-utils-mcp/src/index.ts"]
+    }
+  },
+  "include": ["tests/**/*.ts", "src/**/*.ts"]
+}

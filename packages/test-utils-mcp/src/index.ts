@@ -14,3 +14,4 @@ export { testMcpServerCanHandleSSE } from "./testcases/testMcpServerCanHandleSSE
 export { testMcpServerCanHandleStreamableHttp } from "./testcases/testMcpServerCanHandleStreamableHttp.js";
 export { testHelloMcpServerSessionOverSse } from "./testcases/testHelloMcpServerSessionOverSse.js";
 export { testHelloMcpServerSessionOverStreamableHttp } from "./testcases/testHelloMcpServerSessionOverStreamableHttp.js";
+export { testHelloMcpServerBasicOperations } from "./testcases/testHelloMcpServerBasicOperations.js";
