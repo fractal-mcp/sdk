@@ -52,6 +52,18 @@ await testHelloMcpServerSessionOverSse("http://localhost:3000");
 await testHelloMcpServerSessionOverStreamableHttp("http://localhost:3000");
 ```
 
+## Tool invocation checks
+
+When you only need to validate that a server exposes the `sayHello` tool and can invoke
+it successfully, use the basic operations helper. This exercises tool discovery and a
+single JSON-RPC call without asserting any session behavior.
+
+```ts
+import { testHelloMcpServerBasicOperations } from "@fractal-mcp/test-utils-mcp";
+
+await testHelloMcpServerBasicOperations(client);
+```
+
 ## Local example servers
 
 The package also exports MCP server factories so you can host known-good servers using
