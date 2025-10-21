@@ -82,7 +82,7 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN" >> ~/.npmrc
           
           echo "=== Publishing packages via Turbo ==="
-          npx turbo publish --filter='./packages/*' --concurrency=1
+          npx turbo run release --filter='./packages/*' --concurrency=1
           
           echo "=== Publishing complete ==="
 

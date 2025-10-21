@@ -23,7 +23,7 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "test": "echo 'no tests'",
-    "publish": "npm view \"$npm_package_name@$npm_package_version\" version >/dev/null 2>&1 && echo \"Skipping publish: $npm_package_name@$npm_package_version exists\" || npm publish --access public"
+    "release": "npm view \"$npm_package_name@$npm_package_version\" version >/dev/null 2>&1 && echo \"Skipping publish: $npm_package_name@$npm_package_version exists\" || npm publish --access public"
   },
     "files": [
       "dist",
