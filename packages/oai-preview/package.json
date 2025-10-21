@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/oai-preview",
-  "version": "1.0.0",
+  "version": "2.1.0",
   "description": "React component for previewing OpenAI Apps SDK widgets in development",
   "repository": {
     "type": "git",
@@ -45,4 +45,3 @@
     "react-dom": "^18.0.0"
   }
 }
-
