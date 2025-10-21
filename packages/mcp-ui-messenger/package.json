@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/mcp-ui-messenger",
-  "version": "1.0.0",
+  "version": "2.1.2",
   "description": "MCP-UI compatible cross-iframe messenger",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -35,7 +35,7 @@
   ],
   "dependencies": {
     "@fractal-mcp/protocol": "*",
-    "@fractal-mcp/shared-ui": "*"
+    "@fractal-mcp/shared-ui": "2.1.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -43,5 +43,3 @@
     "typescript": "^5.0.0"
   }
 }
-
-
