@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/bundle",
-  "version": "1.0.0",
+  "version": "2.1.4",
   "description": "Bundling utilities for fractal MCP applications",
   "repository": {
     "type": "git",
