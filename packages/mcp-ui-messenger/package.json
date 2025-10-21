@@ -26,7 +26,8 @@
     "clean": "rm -rf dist",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "echo 'no tests'"
+    "test": "echo 'no tests'",
+    "publish": "npm publish --access public"
   },
   "files": [
     "dist",

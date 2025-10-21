@@ -15,7 +15,8 @@
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix"
+    "lint:fix": "eslint src --fix",
+    "publish": "npm publish --access public"
   },
   "files": [
     "dist",

@@ -21,7 +21,8 @@
     "clean": "rm -rf dist",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "node --experimental-vm-modules --no-warnings ../../node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules --no-warnings ../../node_modules/jest/bin/jest.js",
+    "publish": "npm publish --access public"
   },
   "files": [
     "dist",

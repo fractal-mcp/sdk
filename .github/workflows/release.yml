@@ -53,8 +53,8 @@ jobs:
 
       - name: Build packages
         run: |
-          echo "=== Building all packages (Turbo handles dependency order) ==="
-          npx turbo build --verbosity=2
+          echo "=== Building packages only (excluding apps) ==="
+          npx turbo build --filter='./packages/*' --verbosity=2
           echo "=== Build completed ==="
           
       - name: Type check
@@ -62,20 +62,6 @@ jobs:
           echo "=== Type checking ==="
           npx turbo run type-check || echo "Type check failed, but continuing..."
           
-      - name: Post-build package check
-        run: |
-          echo "=== Checking build outputs ==="
-          ls -la packages/shared-ui/dist/ || echo "shared-ui dist not found"
-          ls -la packages/mcp-ui-messenger/dist/ || echo "mcp-ui-messenger dist not found"
-          ls -la packages/mcp-ui-hooks/dist/ || echo "mcp-ui-hooks dist not found"
-          ls -la packages/mcp-express/dist/ || echo "mcp-express dist not found"
-          ls -la packages/bundle/dist/ || echo "bundle dist not found"
-          ls -la packages/cli/dist/ || echo "cli dist not found"
-          ls -la packages/oai-hooks/dist/ || echo "oai-hooks dist not found"
-          ls -la packages/oai-server/dist/ || echo "oai-server dist not found"
-          ls -la packages/oai-preview/dist/ || echo "oai-preview dist not found"
-          ls -la packages/test-utils-mcp/dist/ || echo "test-utils-mcp dist not found"
-
       - name: Create Git tag
         run: |
           git config --local user.email "action@github.com"
@@ -89,104 +75,13 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          set -euo pipefail
-
           echo "=== Verifying npm authentication ==="
           npm whoami
-          echo "=== npm configuration ==="
-          npm config get registry
-          npm ping
-
-          # Explicit ordered list of packages to publish
-          packages_in_order=(
-            "packages/shared-ui"
-            "packages/mcp-ui-messenger"
-            "packages/mcp-ui-hooks"
-            "packages/mcp-express"
-            "packages/bundle"
-            "packages/cli"
-            "packages/oai-hooks"
-            "packages/oai-server"
-            "packages/oai-preview"
-            "packages/test-utils-mcp"
-          )
-
-          VERSION="${{ inputs.version }}"
-          echo "=== Publishing packages in order (target version: $VERSION) ==="
-          published_count=0
-          failed_count=0
-
-          for package_dir in "${packages_in_order[@]}"; do
-            package="$package_dir/package.json"
-            if [ ! -f "$package" ]; then
-              echo "❌ package.json not found in $package_dir"
-              failed_count=$((failed_count + 1))
-              continue
-            fi
-
-            package_name=$(grep -m1 '"name"' "$package" | sed 's/.*"name": "\([^"]*\)".*/\1/')
-
-            # Check if package is marked as private
-            if grep -q '"private":\s*true' "$package"; then
-              echo "⚠️  Skipping $package_name - marked as private"
-              continue
-            fi
-
-            echo "📦 Publishing $package_name from $package_dir..."
-            cd "$package_dir"
-
-            # Verify package is built (has dist directory)
-            if [ ! -d "dist" ]; then
-              echo "❌ $package_name has no dist directory - build may have failed"
-              failed_count=$((failed_count + 1))
-              cd - > /dev/null
-              continue
-            fi
-
-            # Skip if this exact version already exists on npm
-            if npm view "$package_name@$VERSION" version >/dev/null 2>&1; then
-              echo "ℹ️  $package_name@$VERSION already exists on npm, skipping publish"
-              cd - > /dev/null
-              continue
-            fi
-
-            # Publish the package (scoped -> public)
-            if npm publish --access public; then
-              # Verify availability with retries (npm propagation)
-              tries=0
-              max_tries=8
-              sleep_secs=3
-              until npm view "$package_name@$VERSION" version >/dev/null 2>&1; do
-                tries=$((tries + 1))
-                if [ $tries -ge $max_tries ]; then
-                  echo "❌ $package_name@$VERSION not visible on npm after verification attempts"
-                  failed_count=$((failed_count + 1))
-                  break
-                fi
-                echo "⏳ Waiting for $package_name@$VERSION to appear on npm (try $tries/$max_tries)..."
-                sleep $sleep_secs
-              done
-
-              if [ $tries -lt $max_tries ]; then
-                echo "✅ Verified $package_name@$VERSION published"
-                published_count=$((published_count + 1))
-              fi
-            else
-              echo "❌ Failed to publish $package_name"
-              failed_count=$((failed_count + 1))
-            fi
-
-            cd - > /dev/null
-          done
-
-          echo "=== Publishing Summary ==="
-          echo "✅ Published: $published_count packages"
-          echo "❌ Failed: $failed_count packages"
-
-          if [ $failed_count -gt 0 ]; then
-            echo "⚠️  Some packages failed to publish or verify"
-            exit 1
-          fi
+          
+          echo "=== Publishing packages via Turbo ==="
+          npx turbo publish --filter='./packages/*' --concurrency=1
+          
+          echo "=== Publishing complete ==="
 
       - name: Create GitHub Release
         uses: shogo82148/actions-create-release@v1

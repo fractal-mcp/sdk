@@ -15,7 +15,8 @@
     "clean": "rm -rf dist",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "publish": "npm publish --access public"
   },
   "files": [
     "dist"
