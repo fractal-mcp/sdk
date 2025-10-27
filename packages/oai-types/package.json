@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/oai-types",
-  "version": "1.0.0",
+  "version": "2.2.5",
   "description": "TypeScript types for OpenAI Apps SDK compatible components",
   "repository": {
     "type": "git",
