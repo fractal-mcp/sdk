@@ -2,10 +2,10 @@
  * HTTP transport helpers for SSE
  */
 
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { URL } from "node:url";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { URL } from 'node:url';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 
 export type SessionRecord = {
   server: McpServer;
@@ -30,37 +30,37 @@ export type OpenAIWidgetHttpServerOptions = {
  * Similar to the mcp-express makeExpressRoutes but for SSE transport.
  */
 export function createOpenAIWidgetHttpServer(
-  options: OpenAIWidgetHttpServerOptions
+  options: OpenAIWidgetHttpServerOptions,
 ): ReturnType<typeof createServer> {
   const {
     port = 8000,
-    ssePath = "/mcp",
-    postPath = "/mcp/messages",
+    ssePath = '/mcp',
+    postPath = '/mcp/messages',
     enableCors = true,
-    serverFactory
+    serverFactory,
   } = options;
 
-  console.log(`[createOpenAIWidgetHttpServer] Creating server with options:`, {
+  console.log('[createOpenAIWidgetHttpServer] Creating server with options:', {
     port,
     ssePath,
     postPath,
-    enableCors
+    enableCors,
   });
 
   const sessions = new Map<string, SessionRecord>();
 
   async function handleSseRequest(res: ServerResponse) {
-    console.log(`[handleSseRequest] New SSE connection request`);
-    
+    console.log('[handleSseRequest] New SSE connection request');
+
     if (enableCors) {
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      console.log(`[handleSseRequest] CORS headers set`);
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      console.log('[handleSseRequest] CORS headers set');
     }
 
-    console.log(`[handleSseRequest] Creating server via factory`);
+    console.log('[handleSseRequest] Creating server via factory');
     const server = await serverFactory();
-    console.log(`[handleSseRequest] Server created, creating SSE transport`);
-    
+    console.log('[handleSseRequest] Server created, creating SSE transport');
+
     const transport = new SSEServerTransport(postPath, res);
     const sessionId = transport.sessionId;
     console.log(`[handleSseRequest] SSE transport created with sessionId: ${sessionId}`);
@@ -87,7 +87,7 @@ export function createOpenAIWidgetHttpServer(
       sessions.delete(sessionId);
       console.error(`[handleSseRequest] Failed to start SSE session ${sessionId}:`, error);
       if (!res.headersSent) {
-        res.writeHead(500).end("Failed to establish SSE connection");
+        res.writeHead(500).end('Failed to establish SSE connection');
       }
     }
   }
@@ -95,21 +95,21 @@ export function createOpenAIWidgetHttpServer(
   async function handlePostMessage(
     req: IncomingMessage,
     res: ServerResponse,
-    url: URL
+    url: URL,
   ) {
-    console.log(`[handlePostMessage] POST request received`);
-    
+    console.log('[handlePostMessage] POST request received');
+
     if (enableCors) {
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      res.setHeader("Access-Control-Allow-Headers", "content-type");
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Headers', 'content-type');
     }
 
-    const sessionId = url.searchParams.get("sessionId");
+    const sessionId = url.searchParams.get('sessionId');
     console.log(`[handlePostMessage] Session ID from request: ${sessionId}`);
 
     if (!sessionId) {
-      console.warn(`[handlePostMessage] Missing sessionId query parameter`);
-      res.writeHead(400).end("Missing sessionId query parameter");
+      console.warn('[handlePostMessage] Missing sessionId query parameter');
+      res.writeHead(400).end('Missing sessionId query parameter');
       return;
     }
 
@@ -117,7 +117,7 @@ export function createOpenAIWidgetHttpServer(
 
     if (!session) {
       console.warn(`[handlePostMessage] Unknown session: ${sessionId}. Active sessions: ${Array.from(sessions.keys()).join(', ')}`);
-      res.writeHead(404).end("Unknown session");
+      res.writeHead(404).end('Unknown session');
       return;
     }
 
@@ -128,58 +128,58 @@ export function createOpenAIWidgetHttpServer(
     } catch (error) {
       console.error(`[handlePostMessage] Failed to process message for session ${sessionId}:`, error);
       if (!res.headersSent) {
-        res.writeHead(500).end("Failed to process message");
+        res.writeHead(500).end('Failed to process message');
       }
     }
   }
 
   const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     console.log(`[httpServer] ${req.method} ${req.url}`);
-    
+
     if (!req.url) {
-      console.warn(`[httpServer] Request missing URL`);
-      res.writeHead(400).end("Missing URL");
+      console.warn('[httpServer] Request missing URL');
+      res.writeHead(400).end('Missing URL');
       return;
     }
 
-    const url = new URL(req.url, `http://${req.headers.host ?? "localhost"}`);
+    const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
 
     // Handle CORS preflight
-    if (enableCors && req.method === "OPTIONS" && (url.pathname === ssePath || url.pathname === postPath)) {
+    if (enableCors && req.method === 'OPTIONS' && (url.pathname === ssePath || url.pathname === postPath)) {
       console.log(`[httpServer] Handling CORS preflight for ${url.pathname}`);
       res.writeHead(204, {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "content-type"
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'content-type',
       });
       res.end();
       return;
     }
 
     // Handle SSE endpoint
-    if (req.method === "GET" && url.pathname === ssePath) {
-      console.log(`[httpServer] Routing to SSE handler`);
+    if (req.method === 'GET' && url.pathname === ssePath) {
+      console.log('[httpServer] Routing to SSE handler');
       await handleSseRequest(res);
       return;
     }
 
     // Handle POST messages
-    if (req.method === "POST" && url.pathname === postPath) {
-      console.log(`[httpServer] Routing to POST message handler`);
+    if (req.method === 'POST' && url.pathname === postPath) {
+      console.log('[httpServer] Routing to POST message handler');
       await handlePostMessage(req, res, url);
       return;
     }
 
     console.warn(`[httpServer] No handler for ${req.method} ${url.pathname}`);
-    res.writeHead(404).end("Not Found");
+    res.writeHead(404).end('Not Found');
   });
 
-  httpServer.on("clientError", (err: Error, socket) => {
-    console.error("[httpServer] HTTP client error:", err);
-    socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
+  httpServer.on('clientError', (err: Error, socket) => {
+    console.error('[httpServer] HTTP client error:', err);
+    socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
   });
 
-  console.log(`[createOpenAIWidgetHttpServer] HTTP server created successfully`);
+  console.log('[createOpenAIWidgetHttpServer] HTTP server created successfully');
   return httpServer;
 }
 
@@ -188,10 +188,10 @@ export function createOpenAIWidgetHttpServer(
  * This is a convenience wrapper around createOpenAIWidgetHttpServer.
  */
 export function startOpenAIWidgetHttpServer(
-  options: OpenAIWidgetHttpServerOptions
+  options: OpenAIWidgetHttpServerOptions,
 ): ReturnType<typeof createServer> {
-  const { port = 8000, ssePath = "/mcp", postPath = "/mcp/messages" } = options;
-  
+  const { port = 8000, ssePath = '/mcp', postPath = '/mcp/messages' } = options;
+
   console.log(`[startOpenAIWidgetHttpServer] Starting server on port ${port}`);
   const httpServer = createOpenAIWidgetHttpServer(options);
 
@@ -201,8 +201,8 @@ export function startOpenAIWidgetHttpServer(
     console.log(`[startOpenAIWidgetHttpServer]   Message post endpoint: POST http://localhost:${port}${postPath}?sessionId=...`);
   });
 
-  httpServer.on("error", (err) => {
-    console.error(`[startOpenAIWidgetHttpServer] Server error:`, err);
+  httpServer.on('error', (err) => {
+    console.error('[startOpenAIWidgetHttpServer] Server error:', err);
   });
 
   return httpServer;

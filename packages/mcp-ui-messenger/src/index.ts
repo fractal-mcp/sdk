@@ -1,5 +1,5 @@
 // uiMessenger.ts
-import { RpcClient, RpcRequest } from "@fractal-mcp/shared-ui";
+import { RpcClient, RpcRequest } from '@fractal-mcp/shared-ui';
 
 type RenderData = Record<string, unknown>;
 
@@ -48,22 +48,22 @@ export class UIMessenger {
 	 * Static async initialization method.
 	 * Checks for waitForRenderData query parameter and blocks until render data is received if needed.
 	 */
-	static async init(args: { 
-		rootElId?: string, 
+	static async init(args: {
+		rootElId?: string,
 		forceWaitForRenderData?: boolean,
 		log?: boolean
 	}): Promise<UIMessenger> {
 		const { rootElId = undefined, forceWaitForRenderData = false, log = false } = args;
-		
+
 		// Temporary log function for static method
 		const logFn = (message: string, ...args: any[]) => {
 			if (log) console.log(message, ...args);
 		};
 
 		try {
-			logFn(`[UIMessenger] init`);
+			logFn('[UIMessenger] init');
 			const urlParams = new URLSearchParams(window.location.search);
-			const shouldWaitForRenderData = (urlParams.get("waitForRenderData") === "true") || forceWaitForRenderData;
+			const shouldWaitForRenderData = (urlParams.get('waitForRenderData') === 'true') || forceWaitForRenderData;
 
 			let initialRenderData: RenderData | null = null;
 
@@ -72,33 +72,33 @@ export class UIMessenger {
 				// Set up listener before sending ready event
 				const renderDataPromise = new Promise<RenderData>((resolve, reject) => {
 					const timeoutId = setTimeout(() => {
-						window.removeEventListener("message", handler);
-						reject(new Error("Timeout waiting for render data"));
+						window.removeEventListener('message', handler);
+						reject(new Error('Timeout waiting for render data'));
 					}, 10000); // 10 second timeout
 
 					const handler = (event: MessageEvent) => {
 						try {
 							logFn(`[UIMessenger] handler: ${JSON.stringify(event.data)}`);
-							if (event.data?.type === "ui-lifecycle-iframe-render-data") {
+							if (event.data?.type === 'ui-lifecycle-iframe-render-data') {
 								logFn(`[UIMessenger] ui-lifecycle-iframe-render-data: ${JSON.stringify(event.data)}`);
 								clearTimeout(timeoutId);
-								window.removeEventListener("message", handler);
+								window.removeEventListener('message', handler);
 								resolve(event.data.payload?.renderData ?? {});
 							}
 						} catch (error) {
 							clearTimeout(timeoutId);
-							window.removeEventListener("message", handler);
+							window.removeEventListener('message', handler);
 							reject(error);
 						}
 					};
-					window.addEventListener("message", handler);
+					window.addEventListener('message', handler);
 				});
 
 				// Send ready event
 				try {
-					window.parent.postMessage({ type: "ui-lifecycle-iframe-ready" }, "*");
+					window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*');
 				} catch (error) {
-					logFn(`[UIMessenger] Error sending ready event:`, error);
+					logFn('[UIMessenger] Error sending ready event:', error);
 					throw new Error(`Failed to send ready event: ${error}`);
 				}
 
@@ -108,29 +108,29 @@ export class UIMessenger {
 				// Still send ready event so parent knows to send render data,
 				// but don't block waiting for it
 				try {
-					window.parent.postMessage({ type: "ui-lifecycle-iframe-ready" }, "*");
+					window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*');
 				} catch (error) {
-					logFn(`[UIMessenger] Error sending ready event:`, error);
+					logFn('[UIMessenger] Error sending ready event:', error);
 					// Non-blocking, so just log but don't throw
 				}
 			}
 
 			logFn(`[UIMessenger] initialRenderData: ${JSON.stringify(initialRenderData)}`);
-			const messenger = new UIMessenger(rootElId || "root", {
+			const messenger = new UIMessenger(rootElId || 'root', {
 				initialRenderData,
-				log
+				log,
 			});
 
 			return messenger;
 		} catch (error) {
-			logFn(`[UIMessenger] Error during init:`, error);
+			logFn('[UIMessenger] Error during init:', error);
 			throw error;
 		}
 	}
 
 	constructor(
 		rootElId?: string,
-		options?: { initialRenderData?: RenderData | null, log?: boolean }
+		options?: { initialRenderData?: RenderData | null, log?: boolean },
 	) {
 		try {
 			this._log = options?.log ?? false;
@@ -144,19 +144,19 @@ export class UIMessenger {
 			}
 
 			// setup resize observer (your pattern)
-			this._stopResize = this.setupResizeObserver(rootElId || "root");
+			this._stopResize = this.setupResizeObserver(rootElId || 'root');
 
 			// keep cached render data up to date
-			this.onMessage("ui-lifecycle-iframe-render-data", (msg: any) => {
+			this.onMessage('ui-lifecycle-iframe-render-data', (msg: any) => {
 				try {
 					this._renderData = (msg?.payload?.renderData ?? {}) as RenderData;
-					this.log(`[UIMessenger] Updated render data:`, this._renderData);
+					this.log('[UIMessenger] Updated render data:', this._renderData);
 				} catch (error) {
-					this.log(`[UIMessenger] Error updating render data:`, error);
+					this.log('[UIMessenger] Error updating render data:', error);
 				}
 			});
 		} catch (error) {
-			console.error(`[UIMessenger] Fatal error in constructor:`, error);
+			console.error('[UIMessenger] Fatal error in constructor:', error);
 			throw error;
 		}
 	}
@@ -173,7 +173,7 @@ export class UIMessenger {
 		try {
 			this._stopResize?.();
 		} catch (error) {
-			this.log(`[UIMessenger] Error stopping resize observer:`, error);
+			this.log('[UIMessenger] Error stopping resize observer:', error);
 		}
 	}
 
@@ -183,7 +183,7 @@ export class UIMessenger {
 			this.stopResizeObserver();
 			// (No global listeners retained directly; onMessage handlers use returned disposers inline.)
 		} catch (error) {
-			this.log(`[UIMessenger] Error during destroy:`, error);
+			this.log('[UIMessenger] Error during destroy:', error);
 		}
 	}
 
@@ -192,8 +192,8 @@ export class UIMessenger {
 		try {
 			this.log(`[UIMessenger] setupResizeObserver: ${rootElId}`);
 
-			const el = rootElId 
-				? (document.getElementById(rootElId) as HTMLElement | null) 
+			const el = rootElId
+				? (document.getElementById(rootElId) as HTMLElement | null)
 				: document.documentElement;
 
 			if (!el) {
@@ -216,21 +216,21 @@ export class UIMessenger {
 						// this._rpcClient.emit("ui-size-change", { width, height });
 						window.parent.postMessage(
 							{
-								type: "ui-size-change",
+								type: 'ui-size-change',
 								payload: {
 									height: el.clientHeight,
 									width: el.clientWidth,
 								},
 							},
-							"*"
+							'*',
 						);
 					}
 				} catch (error) {
-					this.log(`[UIMessenger] Error emitting size:`, error);
+					this.log('[UIMessenger] Error emitting size:', error);
 				}
 			};
-			
-			this.log(`[UIMessenger] new ResizeObserver`);
+
+			this.log('[UIMessenger] new ResizeObserver');
 			const ro = new ResizeObserver(() => emitSize());
 			ro.observe(el);
 			emitSize();
@@ -239,11 +239,11 @@ export class UIMessenger {
 				try {
 					ro.disconnect();
 				} catch (error) {
-					this.log(`[UIMessenger] Error disconnecting resize observer:`, error);
+					this.log('[UIMessenger] Error disconnecting resize observer:', error);
 				}
 			};
 		} catch (error) {
-			this.log(`[UIMessenger] Error setting up resize observer:`, error);
+			this.log('[UIMessenger] Error setting up resize observer:', error);
 			throw error;
 		}
 	}
@@ -259,7 +259,7 @@ export class UIMessenger {
 				off?: (type: string, h: (msg: any) => void) => void;
 			};
 
-			if (typeof clientAny.on === "function") {
+			if (typeof clientAny.on === 'function') {
 				// Prefer RpcClient's event bus
 				const wrapped = (msg: any) => {
 					try {
@@ -271,7 +271,7 @@ export class UIMessenger {
 				clientAny.on(type, wrapped);
 				return () => {
 					try {
-						if (typeof clientAny.off === "function") clientAny.off(type, wrapped);
+						if (typeof clientAny.off === 'function') clientAny.off(type, wrapped);
 					} catch (error) {
 						this.log(`[UIMessenger] Error unsubscribing from type ${type}:`, error);
 					}
@@ -287,16 +287,16 @@ export class UIMessenger {
 					this.log(`[UIMessenger] Error in window message handler for type ${type}:`, error);
 				}
 			};
-			window.addEventListener("message", winHandler);
+			window.addEventListener('message', winHandler);
 			return () => {
 				try {
-					window.removeEventListener("message", winHandler);
+					window.removeEventListener('message', winHandler);
 				} catch (error) {
-					this.log(`[UIMessenger] Error removing window message listener:`, error);
+					this.log('[UIMessenger] Error removing window message listener:', error);
 				}
 			};
 		} catch (error) {
-			this.log(`[UIMessenger] Error setting up message listener:`, error);
+			this.log('[UIMessenger] Error setting up message listener:', error);
 			// Return a no-op unsubscribe function
 			return () => {};
 		}
@@ -314,10 +314,10 @@ export class UIMessenger {
 			return new Promise<RenderData>((resolve, reject) => {
 				const timeoutId = setTimeout(() => {
 					dispose();
-					reject(new Error("Timeout waiting for render data"));
+					reject(new Error('Timeout waiting for render data'));
 				}, 10000); // 10 second timeout
 
-				const dispose = this.onMessage("ui-lifecycle-iframe-render-data", (msg) => {
+				const dispose = this.onMessage('ui-lifecycle-iframe-render-data', (msg) => {
 					try {
 						this._renderData = (msg?.payload?.renderData ?? {}) as RenderData;
 						clearTimeout(timeoutId);
@@ -331,7 +331,7 @@ export class UIMessenger {
 				});
 			});
 		} catch (error) {
-			this.log(`[UIMessenger] Error waiting for render data:`, error);
+			this.log('[UIMessenger] Error waiting for render data:', error);
 			throw error;
 		}
 	}
@@ -348,10 +348,10 @@ export class UIMessenger {
 			const p = new Promise<RenderData>((resolve, reject) => {
 				const timeoutId = setTimeout(() => {
 					dispose();
-					reject(new Error("Timeout requesting render data"));
+					reject(new Error('Timeout requesting render data'));
 				}, 10000); // 10 second timeout
 
-				const dispose = this.onMessage("ui-lifecycle-iframe-render-data", (msg) => {
+				const dispose = this.onMessage('ui-lifecycle-iframe-render-data', (msg) => {
 					try {
 						if (msg?.messageId !== messageId) return; // not our response
 						clearTimeout(timeoutId);
@@ -372,11 +372,11 @@ export class UIMessenger {
 			});
 
 			// Post request directly with our messageId (avoid RpcClient.request so we don't leak correlationMap)
-			window.parent.postMessage({ type: "ui-request-render-data", messageId }, "*");
+			window.parent.postMessage({ type: 'ui-request-render-data', messageId }, '*');
 
 			return p;
 		} catch (error) {
-			this.log(`[UIMessenger] Error requesting render data:`, error);
+			this.log('[UIMessenger] Error requesting render data:', error);
 			throw error;
 		}
 	}
@@ -393,17 +393,17 @@ export class UIMessenger {
 	// intent
 	emitIntent(payload: IntentPayload): void {
 		try {
-			this._rpcClient.emit("intent", payload);
+			this._rpcClient.emit('intent', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error emitting intent:`, error);
+			this.log('[UIMessenger] Error emitting intent:', error);
 			throw error;
 		}
 	}
 	requestIntent(payload: IntentPayload): RpcRequest {
 		try {
-			return this._rpcClient.request("intent", payload);
+			return this._rpcClient.request('intent', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error requesting intent:`, error);
+			this.log('[UIMessenger] Error requesting intent:', error);
 			throw error;
 		}
 	}
@@ -411,17 +411,17 @@ export class UIMessenger {
 	// notify
 	emitNotify(payload: NotifyPayload): void {
 		try {
-			this._rpcClient.emit("notify", payload);
+			this._rpcClient.emit('notify', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error emitting notify:`, error);
+			this.log('[UIMessenger] Error emitting notify:', error);
 			throw error;
 		}
 	}
 	requestNotify(payload: NotifyPayload): RpcRequest {
 		try {
-			return this._rpcClient.request("notify", payload);
+			return this._rpcClient.request('notify', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error requesting notify:`, error);
+			this.log('[UIMessenger] Error requesting notify:', error);
 			throw error;
 		}
 	}
@@ -429,17 +429,17 @@ export class UIMessenger {
 	// prompt
 	emitPrompt(payload: PromptPayload): void {
 		try {
-			this._rpcClient.emit("prompt", payload);
+			this._rpcClient.emit('prompt', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error emitting prompt:`, error);
+			this.log('[UIMessenger] Error emitting prompt:', error);
 			throw error;
 		}
 	}
 	requestPrompt(payload: PromptPayload): RpcRequest {
 		try {
-			return this._rpcClient.request("prompt", payload);
+			return this._rpcClient.request('prompt', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error requesting prompt:`, error);
+			this.log('[UIMessenger] Error requesting prompt:', error);
 			throw error;
 		}
 	}
@@ -447,17 +447,17 @@ export class UIMessenger {
 	// tool
 	emitTool(payload: ToolPayload): void {
 		try {
-			this._rpcClient.emit("tool", payload);
+			this._rpcClient.emit('tool', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error emitting tool:`, error);
+			this.log('[UIMessenger] Error emitting tool:', error);
 			throw error;
 		}
 	}
 	requestTool(payload: ToolPayload): RpcRequest {
 		try {
-			return this._rpcClient.request("tool", payload);
+			return this._rpcClient.request('tool', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error requesting tool:`, error);
+			this.log('[UIMessenger] Error requesting tool:', error);
 			throw error;
 		}
 	}
@@ -465,17 +465,17 @@ export class UIMessenger {
 	// link
 	emitLink(payload: LinkPayload): void {
 		try {
-			this._rpcClient.emit("link", payload);
+			this._rpcClient.emit('link', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error emitting link:`, error);
+			this.log('[UIMessenger] Error emitting link:', error);
 			throw error;
 		}
 	}
 	requestLink(payload: LinkPayload): RpcRequest {
 		try {
-			return this._rpcClient.request("link", payload);
+			return this._rpcClient.request('link', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error requesting link:`, error);
+			this.log('[UIMessenger] Error requesting link:', error);
 			throw error;
 		}
 	}
@@ -483,18 +483,18 @@ export class UIMessenger {
 	// ui-request-data (request-only by design)
 	requestData(payload: RequestDataPayload): RpcRequest {
 		try {
-			return this._rpcClient.request("ui-request-data", payload);
+			return this._rpcClient.request('ui-request-data', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error requesting data:`, error);
+			this.log('[UIMessenger] Error requesting data:', error);
 			throw error;
 		}
 	}
 
 	request(payload: RequestPayload): RpcRequest {
 		try {
-			return this._rpcClient.request("ui-request", payload);
+			return this._rpcClient.request('ui-request', payload);
 		} catch (error) {
-			this.log(`[UIMessenger] Error making request:`, error);
+			this.log('[UIMessenger] Error making request:', error);
 			throw error;
 		}
 	}
@@ -505,8 +505,8 @@ export class UIMessenger {
 }
 
 
-export async function initUIMessenger(args?: { 
-	rootElId?: string, 
+export async function initUIMessenger(args?: {
+	rootElId?: string,
 	forceWaitForRenderData?: boolean,
 	log?: boolean
 }): Promise<UIMessenger> {

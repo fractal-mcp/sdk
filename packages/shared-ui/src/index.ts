@@ -46,16 +46,16 @@ export class RpcRequest extends EventTarget {
     }
 
     _onReceived() {
-        this.dispatchEvent(new CustomEvent("ui-message-received"));
+        this.dispatchEvent(new CustomEvent('ui-message-received'));
         this.receivedResolve();
     }
 
     _onResponse(payload: { response?: Record<string, unknown>; error?: unknown }) {
         if (payload.error) {
-            this.dispatchEvent(new CustomEvent("ui-message-response", { detail: { error: payload.error } }));
+            this.dispatchEvent(new CustomEvent('ui-message-response', { detail: { error: payload.error } }));
             this.responseReject(new Error(String(payload.error)));
         } else {
-            this.dispatchEvent(new CustomEvent("ui-message-response", { detail: { response: payload.response } }));
+            this.dispatchEvent(new CustomEvent('ui-message-response', { detail: { response: payload.response } }));
             this.responseResolve(payload.response);
         }
     }
@@ -68,19 +68,19 @@ export class RpcClient {
 
     constructor(opts: RpcClientOptions) {
         this.dstWindow = opts.dstWindow;
-        this.targetOrigin = opts.targetOrigin ?? "*";
+        this.targetOrigin = opts.targetOrigin ?? '*';
         this.correlationMap = new Map();
 
-        window.addEventListener("message", (event) => {
+        window.addEventListener('message', (event) => {
             const msg: Message = event.data;
             if (!msg?.type || !msg.messageId) return;
 
             const req = this.correlationMap.get(msg.messageId);
             if (!req) return;
 
-            if (msg.type === "ui-message-received") {
+            if (msg.type === 'ui-message-received') {
                 req._onReceived();
-            } else if (msg.type === "ui-message-response") {
+            } else if (msg.type === 'ui-message-response') {
                 req._onResponse(msg.payload ?? {});
                 this.correlationMap.delete(msg.messageId);
             }

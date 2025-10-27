@@ -1,7 +1,7 @@
-import { useOpenAiGlobal } from "./useOpenAIGlobal";
-import { type DisplayMode } from "./types";
+import { useOpenAiGlobal } from './useOpenAIGlobal';
+import { type DisplayMode } from './types';
 
 export const useDisplayMode = (): DisplayMode | null => {
-  return useOpenAiGlobal("displayMode");
+  return useOpenAiGlobal('displayMode');
 };
 
