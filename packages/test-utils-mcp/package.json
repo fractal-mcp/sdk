@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/test-utils-mcp",
-  "version": "1.0.0",
+  "version": "2.2.4",
   "description": "Testing utilities for MCP servers",
   "repository": {
     "type": "git",

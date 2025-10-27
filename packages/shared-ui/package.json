@@ -1,21 +1,21 @@
 {
-    "name": "@fractal-mcp/shared-ui",
-    "version": "1.0.0",
-    "description": "rpc layer for iframe communication",
-    "type": "module",
-    "types": "./dist/index.d.ts",
-    "sideEffects": false,
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/fractal-mcp/sdk.git",
-      "directory": "packages/shared-ui"
-    },
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js"
-      }
-    },
+  "name": "@fractal-mcp/shared-ui",
+  "version": "2.2.4",
+  "description": "rpc layer for iframe communication",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fractal-mcp/sdk.git",
+    "directory": "packages/shared-ui"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -25,16 +25,14 @@
     "test": "echo 'no tests'",
     "release": "npm view \"$npm_package_name@$npm_package_version\" version >/dev/null 2>&1 && echo \"Skipping publish: $npm_package_name@$npm_package_version exists\" || npm publish --access public"
   },
-    "files": [
-      "dist",
-      "src",
-      "tests"
-    ],
-    "devDependencies": {
-      "@types/node": "^20.0.0",
-      "eslint": "^8.0.0",
-      "typescript": "^5.0.0"
-    }
+  "files": [
+    "dist",
+    "src",
+    "tests"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
   }
-  
-  
+}
