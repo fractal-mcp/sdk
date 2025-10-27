@@ -7,8 +7,8 @@ import { detectFramework } from './detection.js';
  * Returns appropriate Vite plugins based on detected framework
  */
 export async function getVitePlugins(
-  args: BundleOptions, 
-  options?: { useSingleFile?: boolean }
+  args: BundleOptions,
+  options?: { useSingleFile?: boolean },
 ): Promise<Plugin[]> {
   const framework = await detectFramework(args.entrypoint);
   const plugins: (Plugin | Plugin[])[] = [];

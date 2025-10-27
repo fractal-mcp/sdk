@@ -1,7 +1,7 @@
 // Output configuration
-export type OutputConfig = 
+export type OutputConfig =
   | { type: 'assets' }  // No other options - just main.js and index.css
-  | { 
+  | {
       type: 'html';
       inline?: { js?: boolean; css?: boolean };
       rootOnly?: boolean;  // True = snippet, False = full document

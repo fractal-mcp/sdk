@@ -1,12 +1,12 @@
-import { useOpenAiGlobal } from "./useOpenAIGlobal";
+import { useOpenAiGlobal } from './useOpenAIGlobal';
 
 export function useWidgetProps<T extends Record<string, unknown>>(
-  defaultState?: T | (() => T)
+  defaultState?: T | (() => T),
 ): T {
-  const props = useOpenAiGlobal("toolOutput") as T;
+  const props = useOpenAiGlobal('toolOutput') as T;
 
   const fallback =
-    typeof defaultState === "function"
+    typeof defaultState === 'function'
       ? (defaultState as () => T | null)()
       : defaultState ?? null;
 

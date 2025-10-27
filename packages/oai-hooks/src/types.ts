@@ -29,7 +29,7 @@ export type {
   StreamCompletion,
   CallCompletion,
   SendFollowUpMessage,
-} from "@fractal-mcp/oai-types";
+} from '@fractal-mcp/oai-types';
 
 export {
   SET_GLOBALS_EVENT_TYPE,
@@ -38,5 +38,5 @@ export {
   OpenAiSetGlobalsEvent,
   TOOL_RESPONSE_EVENT_TYPE,
   ToolResponseEvent,
-} from "@fractal-mcp/oai-types";
+} from '@fractal-mcp/oai-types';
 

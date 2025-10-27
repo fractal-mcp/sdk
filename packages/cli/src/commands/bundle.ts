@@ -17,16 +17,16 @@ export function createBundleCommand(): Command {
     .option('--root-only', 'Generate root element snippet instead of full HTML document', false)
     .option('--root-element <id>', 'Root element ID for JS/TS entrypoints', 'root')
     .action(async (options) => {
-      const { 
-        entrypoint, 
-        out, 
+      const {
+        entrypoint,
+        out,
         outputType,
         inlineJs,
         inlineCss,
         rootOnly,
-        rootElement
+        rootElement,
       } = options;
-      
+
       const resolvedEntrypoint = resolve(entrypoint);
       const resolvedOut = resolve(out);
       const ext = extname(resolvedEntrypoint);
@@ -36,7 +36,7 @@ export function createBundleCommand(): Command {
         if (outputType !== 'html' && outputType !== 'assets') {
           throw new Error(
             `Invalid output type: ${outputType}\n` +
-            `Valid options: html, assets`
+            'Valid options: html, assets',
           );
         }
 
@@ -50,9 +50,9 @@ export function createBundleCommand(): Command {
               type: 'html',
               inline: {
                 js: inlineJs,
-                css: inlineCss
+                css: inlineCss,
               },
-              rootOnly
+              rootOnly,
             };
           }
         }
@@ -67,10 +67,10 @@ export function createBundleCommand(): Command {
             console.log(chalk.yellow('   WARNING: Output type ignored for HTML input (always produces single file)'));
           }
           console.log();
-          
+
           await bundleHTMLInput({
             entrypoint: resolvedEntrypoint,
-            out: resolvedOut
+            out: resolvedOut,
           });
         } else if (ext === '.tsx' || ext === '.jsx') {
           // React component
@@ -84,11 +84,11 @@ export function createBundleCommand(): Command {
             console.log(chalk.gray(`   Root only: ${rootOnly}`));
           }
           console.log();
-          
+
           await bundleReactComponent({
             entrypoint: resolvedEntrypoint,
             out: resolvedOut,
-            output: outputConfig
+            output: outputConfig,
           });
         } else if (ext === '.ts' || ext === '.js') {
           // JS/TS entrypoint
@@ -103,17 +103,17 @@ export function createBundleCommand(): Command {
             console.log(chalk.gray(`   Root only: ${rootOnly}`));
           }
           console.log();
-          
+
           await bundleJSEntrypoint({
             entrypoint: resolvedEntrypoint,
             out: resolvedOut,
             rootElement,
-            output: outputConfig
+            output: outputConfig,
           });
         } else {
           throw new Error(
             `Unsupported file type: ${ext}\n` +
-            `Supported types: .html, .tsx, .jsx, .ts, .js`
+            'Supported types: .html, .tsx, .jsx, .ts, .js',
           );
         }
 
@@ -121,7 +121,7 @@ export function createBundleCommand(): Command {
         console.log(chalk.green('SUCCESS: Bundle created successfully!'));
         if (outputType === 'assets') {
           console.log(chalk.gray(`   Location: ${resolvedOut}/`));
-          console.log(chalk.gray(`   Files: main.js, index.css`));
+          console.log(chalk.gray('   Files: main.js, index.css'));
         } else {
           console.log(chalk.gray(`   Location: ${resolvedOut}/index.html`));
         }

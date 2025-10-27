@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { 
-  DisplayMode, 
-  Theme, 
-  SafeArea, 
-  UserAgent 
-} from "@fractal-mcp/oai-types";
+import { useEffect, useRef, useState } from 'react';
+import {
+  DisplayMode,
+  Theme,
+  SafeArea,
+  UserAgent,
+} from '@fractal-mcp/oai-types';
 
 export interface WidgetPreviewComponentProps {
   htmlSnippet: string;
@@ -18,7 +18,7 @@ export interface WidgetPreviewComponentProps {
   onOpenExternal?: (href: string) => void;
   onRequestDisplayMode?: (mode: DisplayMode) => void;
   className?: string;
-  
+
   // Configurable globals
   displayMode?: DisplayMode;
   maxHeight?: number;
@@ -61,17 +61,17 @@ export function WidgetPreviewComponent({
   onSetWidgetState,
   onRequestDisplayMode,
   onOpenExternal,
-  className = "",
-  
+  className = '',
+
   // Configurable globals with sensible defaults
-  displayMode = "inline",
+  displayMode = 'inline',
   maxHeight = 600,
-  theme = "light",
-  locale = "en-US",
+  theme = 'light',
+  locale = 'en-US',
   safeArea = { insets: { top: 0, bottom: 0, left: 0, right: 0 } },
-  userAgent = { 
-    device: { type: "desktop" }, 
-    capabilities: { hover: true, touch: false }
+  userAgent = {
+    device: { type: 'desktop' },
+    capabilities: { hover: true, touch: false },
   },
 }: WidgetPreviewComponentProps) {
 
@@ -110,7 +110,7 @@ export function WidgetPreviewComponent({
               this.widgetState = state;
               try {
                 localStorage.setItem(${JSON.stringify(
-                  widgetStateKey
+                  widgetStateKey,
                 )}, JSON.stringify(state));
               } catch (err) {
                 console.error('[OpenAI Widget] Failed to save widget state:', err);
@@ -281,7 +281,7 @@ export function WidgetPreviewComponent({
           setTimeout(() => {
             try {
               const stored = localStorage.getItem(${JSON.stringify(
-                widgetStateKey
+                widgetStateKey,
               )});
               if (stored && window.openai) {
                 window.openai.widgetState = JSON.parse(stored);
@@ -336,78 +336,78 @@ export function WidgetPreviewComponent({
       }
 
       // Log ALL incoming events
-      console.log("[Preview] Received event from iframe:", event.data);
+      console.log('[Preview] Received event from iframe:', event.data);
 
       switch (event.data.type) {
-        case "openai:setWidgetState":
-          console.log("[Preview] setWidgetState:", event.data.state);
+        case 'openai:setWidgetState':
+          console.log('[Preview] setWidgetState:', event.data.state);
           addLog(
             `setWidgetState: ${JSON.stringify(event.data.state).substring(
               0,
-              60
-            )}...`
+              60,
+            )}...`,
           );
           try {
             localStorage.setItem(
               widgetStateKey,
-              JSON.stringify(event.data.state)
+              JSON.stringify(event.data.state),
             );
           } catch (err) {
-            console.error("[Preview] Failed to save widget state:", err);
+            console.error('[Preview] Failed to save widget state:', err);
           }
           if (onSetWidgetState) {
             onSetWidgetState(event.data.state);
           }
           break;
 
-        case "openai:callTool":
+        case 'openai:callTool':
           console.log(
-            "[Preview] callTool:",
+            '[Preview] callTool:',
             event.data.toolName,
-            event.data.params
+            event.data.params,
           );
           addLog(`callTool: ${event.data.toolName}`);
           if (onToolCall) {
             try {
               const result = await onToolCall(
                 event.data.toolName,
-                event.data.params || {}
+                event.data.params || {},
               );
-              console.log("[Preview] callTool result:", result);
+              console.log('[Preview] callTool result:', result);
               addLog(`↳ tool "${event.data.toolName}" succeeded`);
               iframeRef.current?.contentWindow?.postMessage(
                 {
-                  type: "openai:callTool:response",
+                  type: 'openai:callTool:response',
                   requestId: event.data.requestId,
                   result: result,
                 },
-                "*"
+                '*',
               );
             } catch (err) {
-              console.error("[Preview] callTool error:", err);
+              console.error('[Preview] callTool error:', err);
               addLog(`↳ tool "${event.data.toolName}" failed`);
               iframeRef.current?.contentWindow?.postMessage(
                 {
-                  type: "openai:callTool:response",
+                  type: 'openai:callTool:response',
                   requestId: event.data.requestId,
-                  error: err instanceof Error ? err.message : "Unknown error",
+                  error: err instanceof Error ? err.message : 'Unknown error',
                 },
-                "*"
+                '*',
               );
             }
           }
           break;
 
-        case "openai:sendFollowup":
-          console.log("[Preview] sendFollowup:", event.data.message);
+        case 'openai:sendFollowup':
+          console.log('[Preview] sendFollowup:', event.data.message);
           addLog(`sendFollowup: ${event.data.message.substring(0, 50)}...`);
           if (onSendFollowup) {
             onSendFollowup(event.data.message);
           }
           break;
 
-        case "openai:requestDisplayMode":
-          console.log("[Preview] requestDisplayMode:", event.data.mode);
+        case 'openai:requestDisplayMode':
+          console.log('[Preview] requestDisplayMode:', event.data.mode);
           addLog(`requestDisplayMode: ${event.data.mode}`);
           if (onRequestDisplayMode) {
             onRequestDisplayMode(event.data.mode);
@@ -415,8 +415,8 @@ export function WidgetPreviewComponent({
           // Handle display mode requests if needed
           break;
 
-        case "openai:openExternal":
-          console.log("[Preview] openExternal:", event.data.href);
+        case 'openai:openExternal':
+          console.log('[Preview] openExternal:', event.data.href);
           addLog(`openExternal: ${event.data.href}`);
           if (onOpenExternal) {
             onOpenExternal(event.data.href);
@@ -427,13 +427,13 @@ export function WidgetPreviewComponent({
           break;
 
         default:
-          console.log("[Preview] Unknown event type:", event.data.type);
+          console.log('[Preview] Unknown event type:', event.data.type);
           addLog(`unknown event: ${event.data.type}`);
           break;
       }
     };
 
-    window.addEventListener("message", handleMessage);
+    window.addEventListener('message', handleMessage);
 
     const handleLoad = () => {
       setIsReady(true);
@@ -441,17 +441,17 @@ export function WidgetPreviewComponent({
     };
 
     const handleError = () => {
-      setError("Failed to load preview");
+      setError('Failed to load preview');
     };
 
     const iframe = iframeRef.current;
-    iframe?.addEventListener("load", handleLoad);
-    iframe?.addEventListener("error", handleError as any);
+    iframe?.addEventListener('load', handleLoad);
+    iframe?.addEventListener('error', handleError as any);
 
     return () => {
-      window.removeEventListener("message", handleMessage);
-      iframe?.removeEventListener("load", handleLoad);
-      iframe?.removeEventListener("error", handleError as any);
+      window.removeEventListener('message', handleMessage);
+      iframe?.removeEventListener('load', handleLoad);
+      iframe?.removeEventListener('error', handleError as any);
     };
   }, [widgetStateKey, onToolCall, onSendFollowup, onSetWidgetState, onOpenExternal, onRequestDisplayMode, displayMode, maxHeight, theme, locale, safeArea, userAgent]);
 
@@ -474,8 +474,8 @@ export function WidgetPreviewComponent({
         srcDoc={generateFullHtml()}
         className="w-full border rounded-md bg-white"
         style={{
-          height: "400px",
-          border: "1px solid rgba(128, 128, 128, 0.3)",
+          height: '400px',
+          border: '1px solid rgba(128, 128, 128, 0.3)',
         }}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
         title="OpenAI Widget Display"

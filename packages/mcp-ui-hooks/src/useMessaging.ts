@@ -24,7 +24,7 @@ export function useUIMessenger(args?: { forceWaitForRenderData?: boolean }): Use
 
   const clientPromiseRef = useRef<Promise<UIMessenger> | null>(null);
   const clientRef = useRef<UIMessenger | null>(null);
-  
+
   useEffect(() => {
     let cancelled = false;
 
@@ -105,8 +105,8 @@ export function useUIMessenger(args?: { forceWaitForRenderData?: boolean }): Use
       const client = await getClientPromise();
       client.emitTool(args);
     },
-    ready, 
-    renderData: clientRef.current?.getRenderData() || undefined
+    ready,
+    renderData: clientRef.current?.getRenderData() || undefined,
   };
 }
 

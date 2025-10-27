@@ -2,7 +2,7 @@
  * Core types and utilities for OpenAI widgets
  */
 
-import type { z } from "zod";
+import type { z } from 'zod';
 
 /**
  * OpenAI Widget definition
@@ -34,11 +34,11 @@ export type OpenAIWidget<TInputSchema extends z.ZodType = z.ZodType> = {
  * Widget metadata for OpenAI integration
  */
 export type WidgetMeta = {
-  "openai/outputTemplate": string;
-  "openai/toolInvocation/invoking": string;
-  "openai/toolInvocation/invoked": string;
-  "openai/widgetAccessible": boolean;
-  "openai/resultCanProduceWidget": boolean;
+  'openai/outputTemplate': string;
+  'openai/toolInvocation/invoking': string;
+  'openai/toolInvocation/invoked': string;
+  'openai/widgetAccessible': boolean;
+  'openai/resultCanProduceWidget': boolean;
 };
 
 /**
@@ -46,11 +46,11 @@ export type WidgetMeta = {
  */
 export function getWidgetMeta(widget: OpenAIWidget): WidgetMeta {
   return {
-    "openai/outputTemplate": widget.templateUri,
-    "openai/toolInvocation/invoking": widget.invoking,
-    "openai/toolInvocation/invoked": widget.invoked,
-    "openai/widgetAccessible": true,
-    "openai/resultCanProduceWidget": true
+    'openai/outputTemplate': widget.templateUri,
+    'openai/toolInvocation/invoking': widget.invoking,
+    'openai/toolInvocation/invoked': widget.invoked,
+    'openai/widgetAccessible': true,
+    'openai/resultCanProduceWidget': true,
   };
 }
 
