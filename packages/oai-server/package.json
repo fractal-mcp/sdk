@@ -1,6 +1,6 @@
 {
   "name": "@fractal-mcp/oai-server",
-  "version": "1.0.0",
+  "version": "2.2.0",
   "description": "OpenAI widget utilities for MCP server hosting",
   "repository": {
     "type": "git",
@@ -33,4 +33,3 @@
     "@types/jest": "^29.0.0"
   }
 }
-
