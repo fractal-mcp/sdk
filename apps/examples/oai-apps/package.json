@@ -8,8 +8,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:server": "tsx watch server/index.ts",
-    "build": "tsc"
+    "dev:server": "tsx watch server/index.ts"
   },
   "dependencies": {
     "@fractal-mcp/oai-server": "^1.0.0",

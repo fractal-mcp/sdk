@@ -21,7 +21,8 @@
     "clean": "rm -rf dist",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "echo 'no tests'"
+    "test": "echo 'no tests'",
+    "release": "npm view \"$npm_package_name@$npm_package_version\" version >/dev/null 2>&1 && echo \"Skipping publish: $npm_package_name@$npm_package_version exists\" || npm publish --access public"
   },
   "files": [
     "dist",
