@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./logo/logo_blue.svg" alt="Fractal SDK Logo" width="200"/>
+  <img src="./logo/logo_blue.svg" alt="Fractal SDK Logo" width="200" style="border: 2px solid #e1e4e8; border-radius: 12px; padding: 20px;"/>
 </p>
 
 <h1 align="center">Fractal SDK</h1>
