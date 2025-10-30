@@ -4,6 +4,10 @@
 
 <h1 align="center">Fractal SDK</h1>
 
+<p align="center">
+  <strong>ChatGPT Apps SDK</strong> • <strong>MCP-UI</strong> • <strong>Custom Embeds</strong>
+</p>
+
 <p align="center">A comprehensive toolkit for embedding interactive UIs in chat applications.</p>
 
 <p align="center">
@@ -15,7 +19,7 @@
 </p>
 
 <p align="center">
-Build rich, interactive widget applications using the <a href="https://modelcontextprotocol.io/">Model Context Protocol (MCP)</a> and cross-iframe messaging.
+Build rich, interactive widget applications for <strong>ChatGPT</strong> using the <a href="https://modelcontextprotocol.io/">Model Context Protocol (MCP)</a>
 </p>
 
 ---
