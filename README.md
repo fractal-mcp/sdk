@@ -5,10 +5,12 @@
 <h1 align="center">Fractal SDK</h1>
 
 <p align="center">
-  <strong>ChatGPT Apps SDK</strong> • <strong>MCP-UI</strong> • <strong>Custom Embeds</strong>
+  <strong><a href="https://developers.openai.com/apps-sdk/">ChatGPT Apps SDK</a></strong> • <strong><a href="https://mcpui.dev/guide/embeddable-ui">MCP-UI</a></strong> • <strong>Custom Embeds</strong>
 </p>
 
-<p align="center">A comprehensive toolkit for embedding interactive UIs in chat applications.</p>
+<p align="center">
+Build MCP servers with custom widget UIs • Create interactive React components • Bundle and deploy for production
+</p>
 
 <p align="center">
   <a href="https://github.com/fractal-mcp/sdk/actions"><img alt="CI" src="https://github.com/fractal-mcp/sdk/actions/workflows/ci.yml/badge.svg" /></a>
@@ -19,7 +21,10 @@
 </p>
 
 <p align="center">
-Build rich, interactive widget applications for <strong>ChatGPT</strong> using the <a href="https://modelcontextprotocol.io/">Model Context Protocol (MCP)</a>
+  <a href="./docs/quickstart.md"><strong>Quick Start</strong></a> •
+  <a href="./docs/how-it-works.md"><strong>How It Works</strong></a> •
+  <a href="./docs/packages.md"><strong>Packages</strong></a> •
+  <a href="https://modelcontextprotocol.io/"><strong>MCP</strong></a>
 </p>
 
 ---
